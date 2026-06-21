@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Salud</title>
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiTWkgU2FsdWQiLCJzaG9ydF9uYW1lIjoiTWkgU2FsdWQiLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsInN0YXJ0X3VybCI6Ii4iLCJ0aGVtZV9jb2xvciI6IiMxRDlFNzUifQ==">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mi Salud">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root {
+  --bg-tertiary: #f5f5f5; --bg-primary: #fff; --bg-secondary: #f9f9f9;
+  --border-tertiary: rgba(0,0,0,0.1); --border-secondary: rgba(0,0,0,0.2);
+  --text-primary: #1a1a1a; --text-secondary: #666; --text-tertiary: #999;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-tertiary); color: var(--text-primary); min-height: 100vh; }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; background: var(--bg-primary); border-right: 0.5px solid var(--border-tertiary); padding: 1.5rem 0; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 0 1.25rem 1.5rem; border-bottom: 0.5px solid var(--border-tertiary); margin-bottom: 1rem; }
+.sidebar-logo h1 { font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; display: inline-block; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.25rem; font-size: 14px; color: var(--text-secondary); cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s; }
+.nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.nav-item.active { color: #0F6E56; background: #E1F5EE; border-left-color: #1D9E75; font-weight: 500; border-radius: 0 8px 8px 0; }
+.nav-item i { font-size: 18px; }
+.nav-bottom { margin-top: auto; padding-top: 1rem; border-top: 0.5px solid var(--border-tertiary); }
+.sync-status { display: flex; align-items: center; gap: 6px; padding: 8px 1.25rem; font-size: 11px; color: var(--text-tertiary); }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; }
+.sync-dot.syncing { background: #EF9F27; animation: pulse 1s infinite; }
+.main { flex: 1; overflow-y: auto; }
+.page { display: none; padding: 2rem; }
+.page.active { display: block; }
+.page-header { margin-bottom: 1.5rem; }
+.page-header h2 { font-size: 18px; font-weight: 500; }
+.page-header p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+.card { background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 0.5px solid var(--border-secondary); background: transparent; font-size: 13px; cursor: pointer; color: var(--text-primary); transition: all 0.15s; font-family: inherit; }
+.btn:hover { background: var(--bg-secondary); }
+.btn-primary { background: #1D9E75; border-color: #1D9E75; color: white; }
+.btn-primary:hover { background: #0F6E56; }
+.btn-danger { color: #E24B4A; border-color: rgba(226,75,74,0.3); }
+.btn-danger:hover { background: #FCEBEB; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+input, select, textarea { background: var(--bg-primary); border: 0.5px solid var(--border-secondary); border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text-primary); width: 100%; outline: none; font-family: inherit; }
+input:focus, select:focus, textarea:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
+textarea { resize: vertical; min-height: 80px; }
+label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-group { margin-bottom: 12px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge-teal { background: #E1F5EE; color: #085041; }
+.badge-blue { background: #E6F1FB; color: #0C447C; }
+.badge-amber { background: #FAEEDA; color: #633806; }
+.badge-red { background: #FCEBEB; color: #791F1F; }
+.badge-gray { background: #F1EFE8; color: #444441; }
+.drop-zone { border: 1.5px dashed var(--border-secondary); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+.drop-zone:hover, .drop-zone.drag-over { border-color: #1D9E75; background: #E1F5EE; }
+.drop-zone i { font-size: 32px; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+.drop-zone p { font-size: 14px; color: var(--text-secondary); }
+.drop-zone small { font-size: 12px; color: var(--text-tertiary); }
+.analysis-result { background: var(--bg-secondary); border-radius: 8px; padding: 1rem 1.1rem; font-size: 14px; line-height: 1.65; }
+.analysis-result h1, .analysis-result h2, .analysis-result h3 { font-weight: 600; margin: 14px 0 6px; line-height: 1.3; }
+.analysis-result h1:first-child, .analysis-result h2:first-child, .analysis-result h3:first-child { margin-top: 0; }
+.analysis-result h1 { font-size: 16px; } .analysis-result h2 { font-size: 15px; } .analysis-result h3 { font-size: 14px; color: #0F6E56; }
+.analysis-result p { margin: 8px 0; }
+.analysis-result ul, .analysis-result ol { margin: 6px 0 10px 1.3rem; }
+.analysis-result li { margin: 4px 0; }
+.analysis-result strong { font-weight: 600; }
+.analysis-result code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; font-family: ui-monospace, monospace; }
+.analysis-result hr { border: none; border-top: 0.5px solid var(--border-tertiary); margin: 12px 0; }
+.analysis-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; padding: 10px 12px; background: var(--bg-secondary); border-radius: 8px; margin-top: 10px; user-select: none; }
+.analysis-toggle:hover { background: var(--border-tertiary); }
+.analysis-toggle .at-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+.analysis-toggle .at-chevron { font-size: 16px; transition: transform 0.2s; color: var(--text-secondary); }
+.analysis-toggle.open .at-chevron { transform: rotate(180deg); }
+.analysis-body { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+.analysis-body.open { max-height: 4000px; }
+.analysis-body-inner { padding-top: 10px; }
+.study-card { border: 0.5px solid var(--border-tertiary); border-radius: 10px; padding: 1rem; margin-bottom: 10px; }
+.study-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.study-card h4 { font-size: 14px; font-weight: 500; }
+.study-card p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.med-card { border: 0.5px solid var(--border-tertiary); border-radius: 10px; padding: 1rem; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
+.med-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.med-icon i { font-size: 18px; }
+.med-info { flex: 1; min-width: 0; }
+.med-info h4 { font-size: 14px; font-weight: 500; }
+.med-info p { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.med-times { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-header { font-size: 11px; font-weight: 500; text-align: center; padding: 6px 4px; color: var(--text-secondary); }
+.cal-day { border-radius: 8px; padding: 5px; min-height: 80px; border: 0.5px solid transparent; cursor: pointer; background: var(--bg-primary); display: flex; flex-direction: column; gap: 3px; }
+.cal-day:hover { border-color: var(--border-secondary); }
+.cal-day.other-month { opacity: 0.3; }
+.cal-day.today { background: #E1F5EE; }
+.cal-day.today .day-num { color: #0F6E56; font-weight: 600; }
+.cal-day.selected { border-color: #1D9E75 !important; box-shadow: 0 0 0 1px #1D9E75; }
+.day-num { font-size: 11px; color: var(--text-secondary); line-height: 1; }
+.day-med-dots { display: flex; flex-wrap: wrap; gap: 2px; }
+.day-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.day-indicators { display: flex; gap: 2px; margin-top: auto; }
+.day-ind { flex: 1; border-radius: 3px; height: 14px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: white; border: 0.5px solid rgba(0,0,0,0.1); }
+.day-ind.ind-empty { background: var(--bg-tertiary); color: var(--text-secondary); border-color: var(--border-tertiary); }
+.day-ind.ind-green { background: #1D9E75; } .day-ind.ind-yellow { background: #EF9F27; } .day-ind.ind-red { background: #E24B4A; }
+.cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+.cal-nav h3 { font-size: 15px; font-weight: 500; flex: 1; text-align: center; }
+.day-detail { border: 0.5px solid var(--border-tertiary); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; background: var(--bg-primary); }
+.day-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.day-detail-header h4 { font-size: 15px; font-weight: 500; }
+.detail-section { margin-bottom: 1.25rem; }
+.detail-section:last-child { margin-bottom: 0; }
+.detail-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border-tertiary); }
+.log-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border-tertiary); font-size: 13px; cursor: pointer; }
+.log-item:last-child { border-bottom: none; }
+.log-item input[type=checkbox] { width: auto; cursor: pointer; accent-color: #1D9E75; }
+.indicator-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border-tertiary); }
+.indicator-row:last-child { border-bottom: none; }
+.indicator-label { font-size: 13px; font-weight: 500; min-width: 20px; }
+.indicator-name { font-size: 13px; color: var(--text-secondary); flex: 1; font-style: italic; }
+.semaforo { display: flex; gap: 5px; }
+.sem-btn { width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.sem-btn:hover { transform: scale(1.1); }
+.sem-btn.green { background: #1D9E75; } .sem-btn.yellow { background: #EF9F27; } .sem-btn.red { background: #E24B4A; }
+.sem-btn.inactive { opacity: 0.2; }
+.sem-btn.active { border-color: #1a1a1a; opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transform: scale(1.12); }
+.ind-config-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border-tertiary); }
+.ind-config-row:last-child { border-bottom: none; }
+.ind-letter { width: 28px; height: 28px; border-radius: 6px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; }
+.ind-config-row input { border: none; background: transparent; padding: 0; font-size: 14px; outline: none; flex: 1; }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); }
+.empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.4; display: block; }
+.empty-state p { font-size: 14px; }
+.section-title { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); margin-bottom: 10px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.stat-card { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; }
+.stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+.stat-card .stat-value { font-size: 22px; font-weight: 500; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; width: 480px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; padding-top: 1rem; border-top: 0.5px solid var(--border-tertiary); }
+.hidden { display: none !important; }
+.loading-dots { display: flex; gap: 4px; align-items: center; }
+.loading-dots span { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: bounce 1s infinite; }
+.loading-dots span:nth-child(2) { animation-delay: 0.15s; } .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.reminder-banner { background: var(--bg-primary); border: 2px solid #E24B4A; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 12px; }
+.reminder-banner i.ti { color: #E24B4A; font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.reminder-banner .r-title { font-size: 14px; font-weight: 500; }
+.reminder-banner .r-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.reminder-banner .r-actions { display: flex; gap: 6px; margin-top: 8px; }
+.next-alarm { background: #E1F5EE; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #085041; display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.pending-dot { width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; display: inline-block; margin-left: 4px; animation: pulse 1.5s infinite; }
+.email-row { display: flex; gap: 8px; align-items: center; }
+.email-row input { flex: 1; }
+.status-ok { background: #E1F5EE; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #085041; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.status-err { background: #FCEBEB; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #791F1F; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.legend-row { display: flex; gap: 12px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.gemini-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: linear-gradient(90deg,#4285F4,#9B72CB,#D96570); color: white; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 0.5px solid var(--border-tertiary); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row-label { font-size: 14px; font-weight: 500; }
+.settings-row-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.key-display { display: flex; align-items: center; gap: 8px; font-size: 13px; font-family: ui-monospace, monospace; color: var(--text-secondary); }
+.key-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #1D9E75; }
+.auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-tertiary); padding: 2rem; }
+.auth-box { width: 380px; max-width: 100%; background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: 16px; padding: 2.5rem 2rem; text-align: center; }
+.auth-box h1 { font-size: 18px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; }
+.auth-box p { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+.auth-box input { margin-bottom: 12px; text-align: center; }
+.auth-msg { font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 8px; }
+.auth-msg.ok { background: #E1F5EE; color: #085041; }
+.auth-msg.err { background: #FCEBEB; color: #791F1F; }
+.app-loader { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: var(--text-secondary); font-size: 13px; }
+@media (max-width: 720px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 0.75rem; align-items: center; }
+  .sidebar-logo { display: none; }
+  .nav-item { white-space: nowrap; border-left: none; border-bottom: 2px solid transparent; }
+  .nav-item.active { border-radius: 8px; }
+  .nav-bottom { margin-top: 0; padding-top: 0; border-top: none; display: flex; }
+  .sync-status { display: none; }
+  .stats-row { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="app-loader" class="app-loader">
+  <div class="loading-dots"><span></span><span></span><span></span></div>
+  <span>Cargando Mi Salud...</span>
+</div>
+
+<div id="auth-screen" class="auth-screen hidden">
+  <div class="auth-box">
+    <h1><span class="dot"></span> Mi Salud</h1>
+    <p>Ingresá tu mail y te mandamos un link para entrar, sin contraseña.</p>
+    <input type="email" id="auth-email" placeholder="tu@email.com">
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="sendMagicLink()" id="auth-btn">
+      <i class="ti ti-mail"></i> Enviarme el link
+    </button>
+    <div id="auth-msg"></div>
+  </div>
+</div>
+
+<div class="app hidden" id="app-root">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h1><span class="dot"></span> Mi Salud</h1></div>
+    <nav style="display:flex;">
+      <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Resumen</div>
+      <div class="nav-item" onclick="showPage('estudios')" data-page="estudios"><i class="ti ti-file-medical"></i> Estudios</div>
+      <div class="nav-item" onclick="showPage('comparar')" data-page="comparar"><i class="ti ti-git-compare"></i> Comparar</div>
+      <div class="nav-item" onclick="showPage('medicamentos')" data-page="medicamentos"><i class="ti ti-pill"></i> Medicamentos</div>
+      <div class="nav-item" onclick="showPage('calendario')" data-page="calendario"><i class="ti ti-calendar"></i> Calendario</div>
+      <div class="nav-item" onclick="showPage('recordatorios')" data-page="recordatorios"><i class="ti ti-bell"></i> Recordatorios <span id="pending-badge"></span></div>
+    </nav>
+    <div class="sync-status"><span class="sync-dot" id="sync-dot"></span> <span id="sync-label">Sincronizado</span></div>
+    <div class="nav-bottom" style="display:flex;">
+      <div class="nav-item" onclick="showPage('configuracion')" data-page="configuracion"><i class="ti ti-settings"></i> Configuración</div>
+      <div class="nav-item" onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesión</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page active" id="page-dashboard">
+      <div class="page-header"><h2>Resumen de salud</h2><p>Todo tu registro en un vistazo, sincronizado entre tus dispositivos.</p></div>
+      <div id="setup-banner" class="hidden card" style="background:#FAEEDA;border-color:rgba(186,117,23,0.3);display:flex;align-items:center;gap:10px;">
+        <i class="ti ti-key" style="color:#854F0B;font-size:18px" aria-hidden="true"></i>
+        <div style="flex:1;font-size:13px;">Falta configurar tu clave de API de Gemini para poder analizar estudios.</div>
+        <button class="btn btn-sm btn-primary" onclick="showPage('configuracion')">Configurar</button>
+      </div>
+      <div id="active-reminders-dash"></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Estudios cargados</div><div class="stat-value" id="stat-estudios">0</div></div>
+        <div class="stat-card"><div class="stat-label">Medicamentos activos</div><div class="stat-value" id="stat-meds">0</div></div>
+        <div class="stat-card"><div class="stat-label">Adherencia esta semana</div><div class="stat-value" id="stat-adherencia">—</div></div>
+      </div>
+      <div class="card"><div class="section-title">Medicamentos de hoy</div><div id="today-meds"></div></div>
+      <div class="card"><div class="section-title">Próximos recordatorios</div><div id="next-reminders"></div></div>
+      <div class="card"><div class="section-title">Estudios recientes</div><div id="recent-studies"></div></div>
+    </div>
+
+    <div class="page" id="page-estudios">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+        <div><h2>Estudios médicos</h2><p>Subí tus análisis y documentos. Analizados con Gemini, gratis.</p></div>
+        <button class="btn btn-primary" onclick="document.getElementById('file-upload').click()"><i class="ti ti-upload"></i> Subir estudio</button>
+      </div>
+      <input type="file" id="file-upload" class="hidden" accept=".pdf,image/*" onchange="handleFileUpload(event)">
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+        <i class="ti ti-file-upload" aria-hidden="true"></i>
+        <p>Arrastrá o hacé clic para subir un estudio</p>
+        <small>PDF o imágenes — análisis clínicos, radiografías, consultas</small>
+      </div>
+      <div id="estudios-list" style="margin-top:1.25rem"></div>
+    </div>
+
+    <div class="page" id="page-comparar">
+      <div class="page-header"><h2>Comparar estudios</h2><p>Seleccioná dos estudios para ver cómo cambiaron tus valores.</p></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>Estudio anterior</label><select id="compare-a"></select></div>
+          <div class="form-group"><label>Estudio más reciente</label><select id="compare-b"></select></div>
+        </div>
+        <button class="btn btn-primary" onclick="doCompare()"><i class="ti ti-git-compare"></i> Comparar con IA</button>
+      </div>
+      <div id="compare-result"></div>
+    </div>
+
+    <div class="page" id="page-medicamentos">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+        <div><h2>Medicamentos</h2><p>Tu tratamiento actual.</p></div>
+        <button class="btn btn-primary" onclick="showAddMedModal()"><i class="ti ti-plus"></i> Agregar</button>
+      </div>
+      <div id="meds-list"></div>
+    </div>
+
+    <div class="page" id="page-calendario">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+        <div><h2>Calendario</h2><p>Medicación e indicadores de bienestar diarios.</p></div>
+        <button class="btn btn-sm" onclick="showIndConfigModal()"><i class="ti ti-adjustments"></i> Configurar indicadores</button>
+      </div>
+      <div class="card" style="padding:10px 1.25rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;" id="ind-legend"></div>
+          <div class="legend-row" style="margin-top:0">
+            <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Bien</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#EF9F27"></div>Regular</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div>Mal</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:1.25rem">
+        <div class="cal-nav">
+          <button class="btn btn-sm" onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+          <h3 id="cal-month-label"></h3>
+          <button class="btn btn-sm" onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="calendar-grid" id="cal-grid"></div>
+      </div>
+      <div id="day-detail-panel"></div>
+    </div>
+
+    <div class="page" id="page-recordatorios">
+      <div class="page-header"><h2>Recordatorios</h2><p>Avisos automáticos cuando no marcás una medicación — funcionan aunque no tengas la app abierta.</p></div>
+      <div class="card"><div class="section-title">Estado de recordatorios de hoy</div><div id="reminders-today-list"></div></div>
+      <div class="card"><div class="section-title">Historial de recordatorios enviados</div><div id="reminder-history"></div></div>
+    </div>
+
+    <div class="page" id="page-configuracion">
+      <div class="page-header"><h2>Configuración</h2><p>Claves de API y preferencias de la aplicación.</p></div>
+      <div class="card">
+        <div class="section-title">Análisis con inteligencia artificial</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label" style="display:flex;align-items:center;gap:8px;">Clave de API de Google Gemini <span class="gemini-tag">Gratis</span></div>
+            <div class="settings-row-sub">Conseguila en <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#0F6E56">aistudio.google.com/apikey</a></div>
+          </div>
+        </div>
+        <div id="api-key-configured" class="hidden" style="margin-top:8px;">
+          <div class="key-display"><span class="key-status-dot"></span> <span id="masked-key"></span></div>
+          <button class="btn btn-sm" style="margin-top:10px" onclick="editApiKey()"><i class="ti ti-pencil"></i> Cambiar clave</button>
+        </div>
+        <div id="api-key-edit">
+          <input type="password" id="api-key-input" placeholder="AIza..." style="margin-top:8px">
+          <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="saveApiKey()">Guardar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Recordatorios por correo</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicación, se envía un mail automático a esta casilla — funciona en segundo plano, sin necesidad de tener la app abierta.</p>
+        <div class="email-row">
+          <input type="email" id="reminder-email" placeholder="tu@email.com">
+          <button class="btn btn-primary" onclick="saveReminderEmail()"><i class="ti ti-device-floppy"></i> Guardar</button>
+        </div>
+        <div id="email-status"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Cuenta</div>
+        <div class="settings-row"><div><div class="settings-row-label">Mail</div><div class="settings-row-sub" id="account-email"></div></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="hidden" id="med-modal-wrap">
+  <div class="modal-bg">
+    <div class="modal">
+      <h3>Agregar medicamento</h3>
+      <div class="form-group"><label>Nombre del medicamento</label><input type="text" id="med-name" placeholder="Ej: Enalapril 10mg"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Dosis</label><input type="text" id="med-dose" placeholder="Ej: 10mg"></div>
+        <div class="form-group"><label>Frecuencia</label>
+          <select id="med-freq">
+            <option value="1">1 vez al día</option><option value="2">2 veces al día</option><option value="3">3 veces al día</option><option value="segun-necesidad">Según necesidad</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Horarios (separados por coma)</label><input type="text" id="med-times" placeholder="Ej: 08:00, 20:00"></div>
+      <div class="form-group"><label>Color identificador</label>
+        <select id="med-color"><option value="teal">Verde</option><option value="blue">Azul</option><option value="amber">Amarillo</option><option value="red">Rojo</option></select>
+      </div>
+      <div class="form-group"><label>Notas (opcional)</label><textarea id="med-notes" placeholder="Indicaciones del médico..."></textarea></div>
+      <div class="modal-footer">
+        <button class="btn" onclick="hideMedModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveMed()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hidden" id="ind-modal-wrap">
+  <div class="modal-bg">
+    <div class="modal">
+      <h3>Configurar indicadores</h3>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem">Poné un nombre a cada letra. Aparecerán en cada día del calendario.</p>
+      <div id="ind-config-list"></div>
+      <div class="modal-footer">
+        <button class="btn" onclick="hideIndConfigModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveIndConfig()"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://okfplxkjogkwduyolbvx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_w3Z6TGbw6PlpLJSrAAraLA_l0g9eTwe';
+const GEMINI_MODEL = 'gemini-2.5-flash';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const BADGE_COLORS = { teal:'badge-teal', blue:'badge-blue', amber:'badge-amber', red:'badge-red' };
+const DOT_COLORS = { teal:'#1D9E75', blue:'#378ADD', amber:'#EF9F27', red:'#E24B4A' };
+const DEFAULT_INDICATORS = [ { letter: 'F', name: '' }, { letter: 'C', name: '' }, { letter: 'E', name: '' } ];
+
+let currentUser = null;
+let state = {
+  profile: { gemini_api_key: '', reminder_email: '', indicators: DEFAULT_INDICATORS },
+  studies: [], meds: [], medLogs: [], wellnessLogs: [], reminderHistory: []
+};
+let analysisOpenState = {};
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let selectedDay = null;
+
+function renderMarkdown(text) {
+  if (!text) return '';
+  let lines = text.split('\n'); let html = []; let inList = null;
+  const closeList = () => { if (inList) { html.push('</'+inList+'>'); inList = null; } };
+  const inline = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g,'<em>$1</em>').replace(/`([^`]+?)`/g,'<code>$1</code>');
+  for (let raw of lines) {
+    const line = raw.trim();
+    if (!line) { closeList(); continue; }
+    let m;
+    if ((m = line.match(/^###\s+(.*)/))) { closeList(); html.push('<h3>'+inline(m[1])+'</h3>'); continue; }
+    if ((m = line.match(/^##\s+(.*)/))) { closeList(); html.push('<h2>'+inline(m[1])+'</h2>'); continue; }
+    if ((m = line.match(/^#\s+(.*)/))) { closeList(); html.push('<h1>'+inline(m[1])+'</h1>'); continue; }
+    if (line === '---' || line === '***') { closeList(); html.push('<hr>'); continue; }
+    if ((m = line.match(/^[-*•]\s+(.*)/))) { if (inList!=='ul'){closeList();html.push('<ul>');inList='ul';} html.push('<li>'+inline(m[1])+'</li>'); continue; }
+    if ((m = line.match(/^\d+[\.\)]\s+(.*)/))) { if (inList!=='ol'){closeList();html.push('<ol>');inList='ol';} html.push('<li>'+inline(m[1])+'</li>'); continue; }
+    closeList(); html.push('<p>'+inline(line)+'</p>');
+  }
+  closeList(); return html.join('');
+}
+function toggleAnalysis(id) {
+  analysisOpenState[id] = !analysisOpenState[id];
+  const toggle = document.getElementById('toggle-'+id); const body = document.getElementById('body-'+id);
+  if (analysisOpenState[id]) { toggle.classList.add('open'); body.classList.add('open'); } else { toggle.classList.remove('open'); body.classList.remove('open'); }
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('auth-email').value.trim();
+  if (!email) { showAuthMsg('Ingresá tu mail.', 'err'); return; }
+  const btn = document.getElementById('auth-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  // redirige a esta misma página, sea cual sea la URL donde esté alojada
+  const redirectUrl = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } });
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-mail"></i> Enviarme el link';
+  if (error) showAuthMsg('Error: '+error.message, 'err');
+  else showAuthMsg('Listo, revisá tu mail (' + email + ') y hacé clic en el link para entrar.', 'ok');
+}
+function showAuthMsg(msg, type) { document.getElementById('auth-msg').innerHTML = `<div class="auth-msg ${type}">${msg}</div>`; }
+async function signOut() { if (!confirm('¿Cerrar sesión?')) return; await sb.auth.signOut(); window.location.reload(); }
+
+async function initApp() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('app-loader').classList.add('hidden');
+    document.getElementById('auth-screen').classList.remove('hidden');
+    return;
+  }
+  currentUser = session.user;
+  document.getElementById('account-email').textContent = currentUser.email;
+  await loadAllData();
+  document.getElementById('app-loader').classList.add('hidden');
+  document.getElementById('app-root').classList.remove('hidden');
+  renderDashboard();
+}
+
+function setSyncStatus(syncing) {
+  const dot = document.getElementById('sync-dot'); const label = document.getElementById('sync-label');
+  if (!dot) return;
+  if (syncing) { dot.classList.add('syncing'); label.textContent = 'Sincronizando...'; }
+  else { dot.classList.remove('syncing'); label.textContent = 'Sincronizado'; }
+}
+
+async function loadAllData() {
+  setSyncStatus(true);
+  let { data: profile } = await sb.from('profiles').select('*').eq('user_id', currentUser.id).maybeSingle();
+  if (!profile) {
+    const { data: newProfile } = await sb.from('profiles').insert({ user_id: currentUser.id, indicators: DEFAULT_INDICATORS }).select().single();
+    profile = newProfile;
+  }
+  state.profile = profile || { gemini_api_key:'', reminder_email:'', indicators: DEFAULT_INDICATORS };
+  if (!state.profile.indicators || !state.profile.indicators.length) state.profile.indicators = DEFAULT_INDICATORS;
+
+  const { data: studies } = await sb.from('studies').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  state.studies = studies || [];
+  const { data: meds } = await sb.from('medications').select('*').eq('user_id', currentUser.id).order('created_at');
+  state.meds = meds || [];
+  const { data: medLogs } = await sb.from('med_logs').select('*').eq('user_id', currentUser.id);
+  state.medLogs = medLogs || [];
+  const { data: wellnessLogs } = await sb.from('wellness_logs').select('*').eq('user_id', currentUser.id);
+  state.wellnessLogs = wellnessLogs || [];
+  const { data: reminderHistory } = await sb.from('reminder_history').select('*').eq('user_id', currentUser.id).order('sent_at', { ascending: false }).limit(20);
+  state.reminderHistory = reminderHistory || [];
+
+  document.getElementById('reminder-email').value = state.profile.reminder_email || '';
+  renderApiKeyUI(); renderSetupBanner(); setSyncStatus(false);
+}
+
+function maskKey(k) { if (!k) return ''; if (k.length<=8) return '••••••••'; return k.slice(0,6)+'••••••••'+k.slice(-4); }
+function renderApiKeyUI() {
+  const configured = document.getElementById('api-key-configured'); const edit = document.getElementById('api-key-edit');
+  if (state.profile.gemini_api_key) { configured.classList.remove('hidden'); edit.classList.add('hidden'); document.getElementById('masked-key').textContent = maskKey(state.profile.gemini_api_key); }
+  else { configured.classList.add('hidden'); edit.classList.remove('hidden'); }
+}
+function editApiKey() {
+  document.getElementById('api-key-configured').classList.add('hidden');
+  document.getElementById('api-key-edit').classList.remove('hidden');
+  document.getElementById('api-key-input').value = state.profile.gemini_api_key || '';
+  document.getElementById('api-key-input').focus();
+}
+async function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) return;
+  setSyncStatus(true);
+  await sb.from('profiles').update({ gemini_api_key: val }).eq('user_id', currentUser.id);
+  state.profile.gemini_api_key = val;
+  renderApiKeyUI(); renderSetupBanner(); setSyncStatus(false);
+}
+async function saveReminderEmail() {
+  const val = document.getElementById('reminder-email').value.trim();
+  setSyncStatus(true);
+  await sb.from('profiles').update({ reminder_email: val }).eq('user_id', currentUser.id);
+  state.profile.reminder_email = val;
+  document.getElementById('email-status').innerHTML = `<div class="status-ok"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> Guardado. Los recordatorios llegarán a ${val}</div>`;
+  setSyncStatus(false);
+}
+function renderSetupBanner() {
+  const b = document.getElementById('setup-banner'); if (!b) return;
+  if (state.profile.gemini_api_key) b.classList.add('hidden'); else b.classList.remove('hidden');
+}
+
+function dateKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayKey() { return dateKey(new Date()); }
+function findMedLog(medId, timeIndex, dayKey) { return state.medLogs.find(l => l.med_id===medId && l.time_index===timeIndex && l.log_date===dayKey); }
+function isLoggedToday(medId, timeIndex) { const l = findMedLog(medId, timeIndex, todayKey()); return !!(l && l.taken); }
+
+async function callGemini(parts) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${state.profile.gemini_api_key}`;
+  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts }] }) });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Error de la API de Gemini');
+  const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+  if (!text) throw new Error('Gemini no devolvió una respuesta. Probá de nuevo.');
+  return text;
+}
+function fileToPart(base64, mimeType) { return { inline_data: { mime_type: mimeType, data: base64 } }; }
+
+function showIndConfigModal() {
+  const list = document.getElementById('ind-config-list');
+  list.innerHTML = state.profile.indicators.map((ind,i) => `<div class="ind-config-row"><div class="ind-letter">${ind.letter}</div><input type="text" id="ind-name-${i}" value="${ind.name}" placeholder="Nombre del indicador (ej: Energía, Estado intestinal...)"></div>`).join('');
+  document.getElementById('ind-modal-wrap').classList.remove('hidden');
+}
+function hideIndConfigModal() { document.getElementById('ind-modal-wrap').classList.add('hidden'); }
+async function saveIndConfig() {
+  state.profile.indicators.forEach((ind,i) => { const el = document.getElementById('ind-name-'+i); if (el) ind.name = el.value.trim(); });
+  setSyncStatus(true);
+  await sb.from('profiles').update({ indicators: state.profile.indicators }).eq('user_id', currentUser.id);
+  setSyncStatus(false);
+  hideIndConfigModal(); renderCalendar(); renderIndLegend();
+}
+function renderIndLegend() {
+  const el = document.getElementById('ind-legend'); if (!el) return;
+  el.innerHTML = state.profile.indicators.map(ind => `<div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)"><div style="width:18px;height:18px;border-radius:4px;background:var(--bg-tertiary);border:0.5px solid var(--border-secondary);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text-secondary)">${ind.letter}</div><span>${ind.name || '<em>Sin nombre</em>'}</span></div>`).join('');
+}
+async function setIndLog(dayKey, letter, color) {
+  const existing = state.wellnessLogs.find(w => w.log_date===dayKey && w.letter===letter);
+  setSyncStatus(true);
+  if (existing && existing.color === color) {
+    await sb.from('wellness_logs').delete().eq('id', existing.id);
+    state.wellnessLogs = state.wellnessLogs.filter(w => w.id !== existing.id);
+  } else if (existing) {
+    await sb.from('wellness_logs').update({ color }).eq('id', existing.id);
+    existing.color = color;
+  } else {
+    const { data } = await sb.from('wellness_logs').insert({ user_id: currentUser.id, log_date: dayKey, letter, color }).select().single();
+    if (data) state.wellnessLogs.push(data);
+  }
+  setSyncStatus(false);
+  renderCalendar();
+  if (selectedDay === dayKey) renderDayDetail(dayKey, new Date(dayKey+'T12:00:00'));
+}
+function renderSemaforo(dayKey, letter, currentColor) {
+  return ['green','yellow','red'].map(c => `<div class="sem-btn ${c} ${currentColor===c?'active':'inactive'}" onclick="setIndLog('${dayKey}','${letter}','${c}')" title="${c==='green'?'Bien':c==='yellow'?'Regular':'Mal'}"></div>`).join('');
+}
+
+function renderCalendar() {
+  document.getElementById('cal-month-label').textContent = MONTHS[calMonth]+' '+calYear;
+  renderIndLegend();
+  const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
+  DAYS.forEach(d => { const h=document.createElement('div'); h.className='cal-header'; h.textContent=d; grid.appendChild(h); });
+  const today = new Date();
+  let start = new Date(calYear, calMonth, 1); start.setDate(start.getDate()-start.getDay());
+  for (let i=0;i<42;i++) {
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const isThis = d.getMonth()===calMonth; const isToday = d.toDateString()===today.toDateString(); const key = dateKey(d);
+    const div = document.createElement('div');
+    div.className = 'cal-day'+(isThis?'':' other-month')+(isToday?' today':'')+(selectedDay===key?' selected':'');
+    const medDots = state.meds.map(m => { const l = findMedLog(m.id, 0, key); return `<div class="day-dot" style="background:${l&&l.taken?DOT_COLORS[m.color]:'var(--border-secondary)'}"></div>`; }).join('');
+    const indBlocks = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); const cls = w ? `ind-${w.color}` : 'ind-empty'; return `<div class="day-ind ${cls}">${ind.letter}</div>`; }).join('');
+    div.innerHTML = `<div class="day-num">${d.getDate()}</div><div class="day-med-dots">${medDots}</div><div class="day-indicators">${indBlocks}</div>`;
+    div.onclick = () => selectDay(key, new Date(d));
+    grid.appendChild(div);
+  }
+}
+function selectDay(key, d) { selectedDay = key; renderCalendar(); renderDayDetail(key, d); }
+function renderDayDetail(key, d) {
+  const panel = document.getElementById('day-detail-panel');
+  let medsHtml = '';
+  if (!state.meds.length) { medsHtml = '<p style="font-size:13px;color:var(--text-secondary)">No hay medicamentos cargados.</p>'; }
+  else {
+    medsHtml = state.meds.map(m => {
+      const times = m.times ? m.times.split(',').map(t=>t.trim()) : [m.freq+'x/día'];
+      return times.map((t,ti) => {
+        const l = findMedLog(m.id, ti, key); const checked = !!(l && l.taken);
+        return `<label class="log-item"><input type="checkbox" ${checked?'checked':''} onchange="toggleLog('${key}','${m.id}',${ti},this.checked)"><i class="ti ${checked?'ti-circle-check':'ti-circle'}" style="color:${checked?DOT_COLORS[m.color]:'var(--text-secondary)'};font-size:16px" aria-hidden="true"></i><span style="flex:1">${m.name}</span><span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span></label>`;
+      }).join('');
+    }).join('');
+  }
+  const indsHtml = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); return `<div class="indicator-row"><div class="indicator-label">${ind.letter}</div><div class="indicator-name">${ind.name||'—'}</div><div class="semaforo">${renderSemaforo(key, ind.letter, w?w.color:null)}</div></div>`; }).join('');
+  panel.innerHTML = `<div class="day-detail"><div class="day-detail-header"><h4>${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h4></div><div class="detail-section"><div class="detail-section-title">Medicamentos</div>${medsHtml}</div><div class="detail-section"><div class="detail-section-title">Indicadores de bienestar</div>${indsHtml}<p style="font-size:11px;color:var(--text-secondary);margin-top:8px">Hacé clic en un color para marcarlo. Clic nuevamente para deseleccionar.</p></div></div>`;
+}
+function changeMonth(dir) { calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+
+async function toggleLog(dayKey, medId, timeIndex, val) {
+  setSyncStatus(true);
+  const existing = findMedLog(medId, timeIndex, dayKey);
+  if (existing) {
+    await sb.from('med_logs').update({ taken: val, taken_at: val ? new Date().toISOString() : null }).eq('id', existing.id);
+    existing.taken = val;
+  } else {
+    const { data } = await sb.from('med_logs').insert({ user_id: currentUser.id, med_id: medId, log_date: dayKey, time_index: timeIndex, taken: val, taken_at: val ? new Date().toISOString() : null }).select().single();
+    if (data) state.medLogs.push(data);
+  }
+  setSyncStatus(false);
+  renderCalendar(); updatePendingBadge(); renderRemindersPage();
+  if (selectedDay === dayKey) renderDayDetail(dayKey, new Date(dayKey+'T12:00:00'));
+  if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+}
+
+function updatePendingBadge() {
+  const now = new Date();
+  const pending = state.meds.reduce((acc, med) => {
+    const times = med.times ? med.times.split(',').map(t=>t.trim()).filter(Boolean) : [];
+    return acc + times.filter((t,ti) => { const [h,m]=t.split(':').map(Number); if(isNaN(h)||isNaN(m)) return false; const a=new Date(); a.setHours(h,m,0,0); return a<=now && !isLoggedToday(med.id,ti); }).length;
+  }, 0);
+  document.getElementById('pending-badge').innerHTML = pending>0 ? '<span class="pending-dot"></span>' : '';
+}
+function getNextReminders() {
+  const now = new Date(); const upcoming = [];
+  state.meds.forEach(med => { const times = med.times?med.times.split(',').map(t=>t.trim()).filter(Boolean):[]; times.forEach((t,ti) => { const [h,m]=t.split(':').map(Number); if(isNaN(h)||isNaN(m)) return; const alarm=new Date(); alarm.setHours(h,m,0,0); if(alarm>now) upcoming.push({med,time:t,alarm}); }); });
+  return upcoming.sort((a,b)=>a.alarm-b.alarm).slice(0,4);
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const navEl = document.querySelector('[data-page='+id+']'); if (navEl) navEl.classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='estudios') renderStudies();
+  if(id==='medicamentos') renderMeds();
+  if(id==='calendario') renderCalendar();
+  if(id==='comparar') renderCompare();
+  if(id==='recordatorios') renderRemindersPage();
+  if(id==='configuracion') renderApiKeyUI();
+}
+
+function renderDashboard() {
+  renderSetupBanner();
+  document.getElementById('stat-estudios').textContent = state.studies.length;
+  document.getElementById('stat-meds').textContent = state.meds.length;
+  const logsToday = state.medLogs.filter(l => l.log_date===todayKey() && l.taken);
+  const total = state.meds.reduce((a,m)=>a+(m.times?m.times.split(',').filter(Boolean).length:1),0);
+  document.getElementById('stat-adherencia').textContent = total ? Math.round(logsToday.length/total*100)+'%' : '—';
+  const todayDiv = document.getElementById('today-meds');
+  if (!state.meds.length) { todayDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-pill" aria-hidden="true"></i><p>No hay medicamentos cargados.</p></div>'; }
+  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' · ')||m.freq+'/día'}</span></div>`; }).join(''); }
+  const nextDiv = document.getElementById('next-reminders');
+  const upcoming = getNextReminders();
+  if (!upcoming.length) { nextDiv.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay más medicamentos programados para hoy.</p>'; }
+  else { nextDiv.innerHTML = upcoming.map(u => { const mt=new Date(u.alarm.getTime()+2*60*60*1000); const ms=mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0'); return `<div class="log-item"><i class="ti ti-clock" style="font-size:16px;color:${DOT_COLORS[u.med.color]||DOT_COLORS.teal}" aria-hidden="true"></i><span style="flex:1;font-size:14px">${u.med.name}</span><span class="badge ${BADGE_COLORS[u.med.color]||'badge-teal'}">${u.time}</span><span style="font-size:11px;color:var(--text-secondary);margin-left:4px">mail ${ms}</span></div>`; }).join(''); }
+  const recentDiv = document.getElementById('recent-studies');
+  if (!state.studies.length) { recentDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-file-medical" aria-hidden="true"></i><p>No hay estudios cargados.</p></div>'; }
+  else { recentDiv.innerHTML = state.studies.slice(0,3).map(s => `<div class="log-item"><i class="ti ti-file-text" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${s.name}</span><span class="badge badge-blue">${s.study_date||'Sin fecha'}</span></div>`).join(''); }
+  updatePendingBadge();
+}
+
+function renderRemindersPage() {
+  const now = new Date();
+  const listEl = document.getElementById('reminders-today-list');
+  if (!state.meds.length) { listEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay medicamentos cargados.</p>'; }
+  else {
+    let rows = '';
+    state.meds.forEach(med => {
+      const times = med.times?med.times.split(',').map(t=>t.trim()).filter(Boolean):[];
+      times.forEach((t,ti) => {
+        const [h,m]=t.split(':').map(Number); if(isNaN(h)||isNaN(m)) return;
+        const alarm = new Date(); alarm.setHours(h,m,0,0);
+        const mailTime = new Date(alarm.getTime()+2*60*60*1000);
+        const mailStr = mailTime.getHours().toString().padStart(2,'0')+':'+mailTime.getMinutes().toString().padStart(2,'0');
+        const log = findMedLog(med.id, ti, todayKey());
+        const done = !!(log && log.taken); const isPast = alarm<=now;
+        let badge = '';
+        if (done) badge = '<span class="badge badge-teal"><i class="ti ti-check" style="font-size:10px"></i> Tomado</span>';
+        else if (log && log.reminder_sent) badge = '<span class="badge badge-red">Mail enviado</span>';
+        else if (isPast && mailTime>now) badge = '<span class="badge badge-amber">Esperando 2 hs</span>';
+        else if (isPast && mailTime<=now) badge = '<span class="badge badge-gray">Procesando...</span>';
+        else badge = '<span class="badge badge-gray">Programado</span>';
+        rows += `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[med.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${med.name}</span><span style="font-size:12px;color:var(--text-secondary);margin-right:8px">${t} → mail ${mailStr}</span>${badge}</div>`;
+      });
+    });
+    listEl.innerHTML = rows || '<p style="font-size:13px;color:var(--text-secondary)">Sin horarios configurados.</p>';
+  }
+  const histEl = document.getElementById('reminder-history');
+  if (!state.reminderHistory.length) { histEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">Ningún recordatorio enviado todavía.</p>'; }
+  else { histEl.innerHTML = state.reminderHistory.map(r => `<div class="log-item"><i class="ti ti-mail" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${r.med_name}</span><span style="font-size:12px;color:var(--text-secondary)">${r.scheduled_time||''} · ${new Date(r.sent_at).toLocaleDateString('es-AR')}</span><span class="badge badge-red">Enviado</span></div>`).join(''); }
+}
+
+function renderStudies() {
+  const list = document.getElementById('estudios-list');
+  if (!state.studies.length) { list.innerHTML = '<div class="empty-state"><i class="ti ti-file-medical" aria-hidden="true"></i><p>Subí tu primer estudio arriba.</p></div>'; return; }
+  list.innerHTML = state.studies.map((s) => {
+    const aid = 'study'+s.id; const isOpen = !!analysisOpenState[aid];
+    return `<div class="study-card">
+      <div class="study-meta"><i class="ti ti-file-text" style="font-size:18px;color:#378ADD" aria-hidden="true"></i><span class="badge badge-blue">${s.type||'Estudio'}</span><span class="badge badge-teal">${s.study_date||'Sin fecha'}</span></div>
+      <h4>${s.name}</h4>
+      <p>${s.analysis ? 'Análisis completo disponible.' : 'Sin análisis todavía.'}</p>
+      ${s.analysis ? `<div class="analysis-toggle ${isOpen?'open':''}" id="toggle-${aid}" onclick="toggleAnalysis('${aid}')"><div class="at-label"><i class="ti ti-sparkles" style="color:#4285F4" aria-hidden="true"></i> Ver análisis de Gemini</div><i class="ti ti-chevron-down at-chevron" aria-hidden="true"></i></div><div class="analysis-body ${isOpen?'open':''}" id="body-${aid}"><div class="analysis-body-inner"><div class="analysis-result">${renderMarkdown(s.analysis)}</div></div></div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        ${!s.analysis?`<button class="btn btn-sm btn-primary" onclick="analyzeStudy('${s.id}')"><i class="ti ti-sparkles"></i> Analizar con IA</button>`:''}
+        <button class="btn btn-sm btn-danger" onclick="deleteStudy('${s.id}')"><i class="ti ti-trash"></i> Eliminar</button>
+      </div>
+      <div id="analysis-loading-${s.id}" class="hidden" style="margin-top:10px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)"><div class="loading-dots"><span></span><span></span><span></span></div> Analizando con Gemini...</div>
+    </div>`;
+  }).join('');
+}
+
+function renderMeds() {
+  const list = document.getElementById('meds-list');
+  if (!state.meds.length) { list.innerHTML = '<div class="empty-state"><i class="ti ti-pill" aria-hidden="true"></i><p>No hay medicamentos cargados.</p></div>'; return; }
+  const now = new Date();
+  list.innerHTML = state.meds.map((m) => {
+    const times = m.times?m.times.split(',').map(t=>t.trim()).filter(Boolean):[];
+    const nextT = times.map(t=>{const [h,mn]=t.split(':').map(Number);const d=new Date();d.setHours(h,mn,0,0);return{t,d};}).filter(x=>x.d>now).sort((a,b)=>a.d-b.d)[0];
+    const mailStr = nextT?(()=>{const mt=new Date(nextT.d.getTime()+2*60*60*1000);return mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0');})():null;
+    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} · ${m.freq} vez/veces al día</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail automático a las ${mailStr} si no lo marcás</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
+  }).join('');
+}
+
+function renderCompare() {
+  const opts = state.studies.map((s) => `<option value="${s.id}">${s.name} (${s.study_date||'sin fecha'})</option>`).join('');
+  document.getElementById('compare-a').innerHTML = '<option value="">Seleccionar...</option>'+opts;
+  document.getElementById('compare-b').innerHTML = '<option value="">Seleccionar...</option>'+opts;
+}
+
+function handleFileUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    setSyncStatus(true);
+    const { data } = await sb.from('studies').insert({
+      user_id: currentUser.id, name: file.name.replace(/\.[^.]+$/,''),
+      type: file.name.endsWith('.pdf')?'PDF':'Imagen', study_date: new Date().toLocaleDateString('es-AR'),
+      mime_type: file.type, file_data: ev.target.result, analysis: ''
+    }).select().single();
+    if (data) state.studies.unshift(data);
+    setSyncStatus(false);
+    showPage('estudios');
+  };
+  reader.readAsDataURL(file); e.target.value='';
+}
+
+async function analyzeStudy(id) {
+  if (!state.profile.gemini_api_key) { showPage('configuracion'); return; }
+  const s = state.studies.find(x => x.id===id); if (!s) return;
+  const loadEl = document.getElementById('analysis-loading-'+id);
+  if (loadEl) { loadEl.style.display='flex'; loadEl.classList.remove('hidden'); }
+  try {
+    const b64 = s.file_data.split(',')[1];
+    const parts = [ fileToPart(b64, s.mime_type), { text: `Sos un médico explicando resultados a un paciente. Analizá este estudio y explicá en lenguaje simple, usando formato Markdown (encabezados con ##, negritas con **, listas con -):\n\n## Tipo de estudio\n## Hallazgos principales\n## Valores fuera de lo normal (altos o bajos)\n## Qué podría significar\n## Preguntas para el médico\n\nSé empático y claro, sin jerga médica.` } ];
+    const text = await callGemini(parts);
+    setSyncStatus(true);
+    await sb.from('studies').update({ analysis: text }).eq('id', id);
+    s.analysis = text; analysisOpenState['study'+id] = true;
+    setSyncStatus(false); renderStudies();
+  } catch(err) { alert('Error: '+err.message); if(loadEl) loadEl.style.display='none'; }
+}
+
+async function doCompare() {
+  const ia = document.getElementById('compare-a').value, ib = document.getElementById('compare-b').value;
+  if (ia===''||ib===''){alert('Seleccioná dos estudios.');return;} if(ia===ib){alert('Seleccioná dos estudios distintos.');return;} if(!state.profile.gemini_api_key){showPage('configuracion');return;}
+  const sa = state.studies.find(x=>x.id===ia), sb_ = state.studies.find(x=>x.id===ib);
+  document.getElementById('compare-result').innerHTML = `<div class="card" style="text-align:center;padding:2rem"><div class="loading-dots" style="justify-content:center"><span></span><span></span><span></span></div><p style="margin-top:10px;font-size:14px;color:var(--text-secondary)">Comparando estudios con Gemini...</p></div>`;
+  try {
+    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} — ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} — ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): qué cambió, si es positivo o negativo, qué mejoró, qué empeoró, si hay algo urgente, y qué preguntas para el médico. Usá lenguaje simple, sin jerga médica.` } ];
+    const text = await callGemini(parts);
+    document.getElementById('compare-result').innerHTML = `<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem"><span class="badge badge-blue">${sa.name}</span><i class="ti ti-arrow-right" aria-hidden="true"></i><span class="badge badge-teal">${sb_.name}</span></div><div class="analysis-result">${renderMarkdown(text)}</div></div>`;
+  } catch(err) { document.getElementById('compare-result').innerHTML = `<div class="card"><p style="color:#E24B4A">Error: ${err.message}</p></div>`; }
+}
+
+async function deleteStudy(id) { if(!confirm('¿Eliminar este estudio?')) return; setSyncStatus(true); await sb.from('studies').delete().eq('id', id); state.studies = state.studies.filter(s=>s.id!==id); setSyncStatus(false); renderStudies(); }
+function showAddMedModal() { document.getElementById('med-modal-wrap').classList.remove('hidden'); }
+function hideMedModal() { document.getElementById('med-modal-wrap').classList.add('hidden'); ['med-name','med-dose','med-times','med-notes'].forEach(id=>document.getElementById(id).value=''); }
+async function saveMed() {
+  const name = document.getElementById('med-name').value.trim(); if(!name){alert('Ingresá el nombre.');return;}
+  setSyncStatus(true);
+  const { data } = await sb.from('medications').insert({ user_id: currentUser.id, name, dose: document.getElementById('med-dose').value.trim(), freq: document.getElementById('med-freq').value, times: document.getElementById('med-times').value.trim(), color: document.getElementById('med-color').value, notes: document.getElementById('med-notes').value.trim() }).select().single();
+  if (data) state.meds.push(data);
+  setSyncStatus(false); hideMedModal(); renderMeds();
+}
+async function deleteMed(id) { if(!confirm('¿Eliminar este medicamento?')) return; setSyncStatus(true); await sb.from('medications').delete().eq('id', id); state.meds = state.meds.filter(m=>m.id!==id); setSyncStatus(false); renderMeds(); }
+
+const dz = document.getElementById('drop-zone');
+if (dz) {
+  dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag-over');});
+  dz.addEventListener('dragleave', ()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e=>{e.preventDefault();dz.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f){const inp=document.getElementById('file-upload');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleFileUpload({target:inp});}});
+}
+
+setInterval(() => {
+  if (!currentUser) return;
+  updatePendingBadge();
+  if (document.getElementById('page-recordatorios').classList.contains('active')) renderRemindersPage();
+  if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+}, 60000);
+
+setInterval(async () => {
+  if (!currentUser) return;
+  const { data: medLogs } = await sb.from('med_logs').select('*').eq('user_id', currentUser.id);
+  state.medLogs = medLogs || [];
+  if (document.getElementById('page-calendario').classList.contains('active')) renderCalendar();
+}, 30000);
+
+initApp();
+</script>
+</body>
+</html>
