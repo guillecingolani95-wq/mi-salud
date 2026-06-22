@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Mi Salud">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F6E56'/%3E%3Cpath d='M32 50C32 50 14 38 14 26C14 18 20 12 27 12C30 12 32 14 32 17C32 14 34 12 37 12C44 12 50 18 50 26C50 38 32 50 32 50Z' fill='white'/%3E%3Cpolyline points='16,30 22,30 25,23 28,37 31,27 33,31 38,31' fill='none' stroke='%230F6E56' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230F6E56'/%3E%3Cpath d='M90 142C90 142 38 108 38 74C38 52 52 36 68 36C76 36 82 40 90 48C98 40 104 36 112 36C128 36 142 52 142 74C142 108 90 142 90 142Z' fill='white'/%3E%3Cpolyline points='44,86 60,86 67,66 74,106 81,78 87,88 102,88' fill='none' stroke='%230F6E56' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
@@ -203,7 +204,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 
 <div id="auth-screen" class="auth-screen hidden">
   <div class="auth-box">
-    <h1><span class="dot"></span> Mi Salud</h1>
+    <h1 style="display:flex;align-items:center;justify-content:center;gap:10px;font-size:20px;font-weight:500;margin-bottom:6px;"><svg width="36" height="36" viewBox="0 0 64 64" style="flex-shrink:0;border-radius:9px;"><rect width="64" height="64" rx="14" fill="#0F6E56"/><path d="M32 50C32 50 14 38 14 26C14 18 20 12 27 12C30 12 32 14 32 17C32 14 34 12 37 12C44 12 50 18 50 26C50 38 32 50 32 50Z" fill="white"/><polyline points="16,30 22,30 25,23 28,37 31,27 33,31 38,31" fill="none" stroke="#0F6E56" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Mi Salud</h1>
     <p>IngresÃ¡ tu mail y te mandamos un link para entrar, sin contraseÃ±a.</p>
     <input type="email" id="auth-email" placeholder="tu@email.com">
     <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="sendMagicLink()" id="auth-btn">
@@ -215,7 +216,12 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 
 <div class="app hidden" id="app-root">
   <aside class="sidebar">
-    <div class="sidebar-logo"><h1><span class="dot"></span> Mi Salud</h1></div>
+    <div class="sidebar-logo">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="32" height="32" viewBox="0 0 64 64" style="flex-shrink:0;border-radius:8px;"><rect width="64" height="64" rx="14" fill="#0F6E56"/><path d="M32 50C32 50 14 38 14 26C14 18 20 12 27 12C30 12 32 14 32 17C32 14 34 12 37 12C44 12 50 18 50 26C50 38 32 50 32 50Z" fill="white"/><polyline points="16,30 22,30 25,23 28,37 31,27 33,31 38,31" fill="none" stroke="#0F6E56" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:16px;font-weight:500;">Mi Salud</span>
+      </div>
+    </div>
     <nav style="display:flex;flex-direction:column;">
       <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Resumen</div>
       <div class="nav-item" onclick="showPage('estudios')" data-page="estudios"><i class="ti ti-file-medical"></i> Estudios</div>
