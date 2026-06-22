@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Mi Salud">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
@@ -23,7 +23,8 @@ body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-t
 .sidebar-logo { padding: 0 1.25rem 1.5rem; border-bottom: 0.5px solid var(--border-tertiary); margin-bottom: 1rem; }
 .sidebar-logo h1 { font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; display: inline-block; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.25rem; font-size: 14px; color: var(--text-secondary); cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.25rem; font-size: 14px; color: var(--text-secondary); cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s; min-height: 20px; }
+.nav-item i.ti { display: inline-block; width: 18px; flex-shrink: 0; }
 .nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
 .nav-item.active { color: #0F6E56; background: #E1F5EE; border-left-color: #1D9E75; font-weight: 500; border-radius: 0 8px 8px 0; }
 .nav-item i { font-size: 18px; }
@@ -203,7 +204,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 <div id="auth-screen" class="auth-screen hidden">
   <div class="auth-box">
     <h1><span class="dot"></span> Mi Salud</h1>
-    <p>Ingresá tu mail y te mandamos un link para entrar, sin contraseña.</p>
+    <p>IngresÃ¡ tu mail y te mandamos un link para entrar, sin contraseÃ±a.</p>
     <input type="email" id="auth-email" placeholder="tu@email.com">
     <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="sendMagicLink()" id="auth-btn">
       <i class="ti ti-mail"></i> Enviarme el link
@@ -215,7 +216,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 <div class="app hidden" id="app-root">
   <aside class="sidebar">
     <div class="sidebar-logo"><h1><span class="dot"></span> Mi Salud</h1></div>
-    <nav style="display:flex;">
+    <nav style="display:flex;flex-direction:column;">
       <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Resumen</div>
       <div class="nav-item" onclick="showPage('estudios')" data-page="estudios"><i class="ti ti-file-medical"></i> Estudios</div>
       <div class="nav-item" onclick="showPage('comparar')" data-page="comparar"><i class="ti ti-git-compare"></i> Comparar</div>
@@ -224,9 +225,9 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       <div class="nav-item" onclick="showPage('recordatorios')" data-page="recordatorios"><i class="ti ti-bell"></i> Recordatorios <span id="pending-badge"></span></div>
     </nav>
     <div class="sync-status"><span class="sync-dot" id="sync-dot"></span> <span id="sync-label">Sincronizado</span></div>
-    <div class="nav-bottom" style="display:flex;">
-      <div class="nav-item" onclick="showPage('configuracion')" data-page="configuracion"><i class="ti ti-settings"></i> Configuración</div>
-      <div class="nav-item" onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesión</div>
+    <div class="nav-bottom" style="display:flex;flex-direction:column;">
+      <div class="nav-item" onclick="showPage('configuracion')" data-page="configuracion"><i class="ti ti-settings"></i> ConfiguraciÃ³n</div>
+      <div class="nav-item" onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesiÃ³n</div>
     </div>
   </aside>
 
@@ -243,33 +244,33 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Estudios cargados</div><div class="stat-value" id="stat-estudios">0</div></div>
         <div class="stat-card"><div class="stat-label">Medicamentos activos</div><div class="stat-value" id="stat-meds">0</div></div>
-        <div class="stat-card"><div class="stat-label">Adherencia esta semana</div><div class="stat-value" id="stat-adherencia">—</div></div>
+        <div class="stat-card"><div class="stat-label">Adherencia esta semana</div><div class="stat-value" id="stat-adherencia">â€”</div></div>
       </div>
       <div class="card"><div class="section-title">Medicamentos de hoy</div><div id="today-meds"></div></div>
-      <div class="card"><div class="section-title">Próximos recordatorios</div><div id="next-reminders"></div></div>
+      <div class="card"><div class="section-title">PrÃ³ximos recordatorios</div><div id="next-reminders"></div></div>
       <div class="card"><div class="section-title">Estudios recientes</div><div id="recent-studies"></div></div>
     </div>
 
     <div class="page" id="page-estudios">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
-        <div><h2>Estudios médicos</h2><p>Subí tus análisis y documentos. Analizados con Gemini, gratis.</p></div>
+        <div><h2>Estudios mÃ©dicos</h2><p>SubÃ­ tus anÃ¡lisis y documentos. Analizados con Gemini, gratis.</p></div>
         <button class="btn btn-primary" onclick="document.getElementById('file-upload').click()"><i class="ti ti-upload"></i> Subir estudio</button>
       </div>
       <input type="file" id="file-upload" class="hidden" accept=".pdf,image/*" onchange="handleFileUpload(event)">
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()">
         <i class="ti ti-file-upload" aria-hidden="true"></i>
-        <p>Arrastrá o hacé clic para subir un estudio</p>
-        <small>PDF o imágenes — análisis clínicos, radiografías, consultas</small>
+        <p>ArrastrÃ¡ o hacÃ© clic para subir un estudio</p>
+        <small>PDF o imÃ¡genes â€” anÃ¡lisis clÃ­nicos, radiografÃ­as, consultas</small>
       </div>
       <div id="estudios-list" style="margin-top:1.25rem"></div>
     </div>
 
     <div class="page" id="page-comparar">
-      <div class="page-header"><h2>Comparar estudios</h2><p>Seleccioná dos estudios para ver cómo cambiaron tus valores.</p></div>
+      <div class="page-header"><h2>Comparar estudios</h2><p>SeleccionÃ¡ dos estudios para ver cÃ³mo cambiaron tus valores.</p></div>
       <div class="card">
         <div class="form-row">
           <div class="form-group"><label>Estudio anterior</label><select id="compare-a"></select></div>
-          <div class="form-group"><label>Estudio más reciente</label><select id="compare-b"></select></div>
+          <div class="form-group"><label>Estudio mÃ¡s reciente</label><select id="compare-b"></select></div>
         </div>
         <button class="btn btn-primary" onclick="doCompare()"><i class="ti ti-git-compare"></i> Comparar con IA</button>
       </div>
@@ -286,7 +287,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 
     <div class="page" id="page-calendario">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
-        <div><h2>Calendario</h2><p>Medicación e indicadores de bienestar diarios.</p></div>
+        <div><h2>Calendario</h2><p>MedicaciÃ³n e indicadores de bienestar diarios.</p></div>
         <button class="btn btn-sm" onclick="showIndConfigModal()"><i class="ti ti-adjustments"></i> Configurar indicadores</button>
       </div>
       <div class="card" style="padding:10px 1.25rem;">
@@ -311,15 +312,15 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
     </div>
 
     <div class="page" id="page-recordatorios">
-      <div class="page-header"><h2>Recordatorios</h2><p>Avisos automáticos cuando no marcás una medicación — funcionan aunque no tengas la app abierta.</p></div>
+      <div class="page-header"><h2>Recordatorios</h2><p>Avisos automÃ¡ticos cuando no marcÃ¡s una medicaciÃ³n â€” funcionan aunque no tengas la app abierta.</p></div>
       <div class="card"><div class="section-title">Estado de recordatorios de hoy</div><div id="reminders-today-list"></div></div>
       <div class="card"><div class="section-title">Historial de recordatorios enviados</div><div id="reminder-history"></div></div>
     </div>
 
     <div class="page" id="page-configuracion">
-      <div class="page-header"><h2>Configuración</h2><p>Claves de API y preferencias de la aplicación.</p></div>
+      <div class="page-header"><h2>ConfiguraciÃ³n</h2><p>Claves de API y preferencias de la aplicaciÃ³n.</p></div>
       <div class="card">
-        <div class="section-title">Análisis con inteligencia artificial</div>
+        <div class="section-title">AnÃ¡lisis con inteligencia artificial</div>
         <div class="settings-row">
           <div>
             <div class="settings-row-label" style="display:flex;align-items:center;gap:8px;">Clave de API de Google Gemini <span class="gemini-tag">Gratis</span></div>
@@ -337,7 +338,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       </div>
       <div class="card">
         <div class="section-title">Recordatorios por correo</div>
-        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicación, se envía un mail automático a esta casilla — funciona en segundo plano, sin necesidad de tener la app abierta.</p>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicaciÃ³n, se envÃ­a un mail automÃ¡tico a esta casilla â€” funciona en segundo plano, sin necesidad de tener la app abierta.</p>
         <div class="email-row">
           <input type="email" id="reminder-email" placeholder="tu@email.com">
           <button class="btn btn-primary" onclick="saveReminderEmail()"><i class="ti ti-device-floppy"></i> Guardar</button>
@@ -362,7 +363,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
         <div class="form-group"><label>Dosis</label><input type="text" id="med-dose" placeholder="Ej: 10mg"></div>
         <div class="form-group"><label>Frecuencia</label>
           <select id="med-freq">
-            <option value="1">1 vez al día</option><option value="2">2 veces al día</option><option value="3">3 veces al día</option><option value="segun-necesidad">Según necesidad</option>
+            <option value="1">1 vez al dÃ­a</option><option value="2">2 veces al dÃ­a</option><option value="3">3 veces al dÃ­a</option><option value="segun-necesidad">SegÃºn necesidad</option>
           </select>
         </div>
       </div>
@@ -370,7 +371,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       <div class="form-group"><label>Color identificador</label>
         <select id="med-color"><option value="teal">Verde</option><option value="blue">Azul</option><option value="amber">Amarillo</option><option value="red">Rojo</option></select>
       </div>
-      <div class="form-group"><label>Notas (opcional)</label><textarea id="med-notes" placeholder="Indicaciones del médico..."></textarea></div>
+      <div class="form-group"><label>Notas (opcional)</label><textarea id="med-notes" placeholder="Indicaciones del mÃ©dico..."></textarea></div>
       <div class="modal-footer">
         <button class="btn" onclick="hideMedModal()">Cancelar</button>
         <button class="btn btn-primary" onclick="saveMed()">Guardar</button>
@@ -383,7 +384,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
   <div class="modal-bg">
     <div class="modal">
       <h3>Configurar indicadores</h3>
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem">Poné un nombre a cada letra. Aparecerán en cada día del calendario.</p>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem">PonÃ© un nombre a cada letra. AparecerÃ¡n en cada dÃ­a del calendario.</p>
       <div id="ind-config-list"></div>
       <div class="modal-footer">
         <button class="btn" onclick="hideIndConfigModal()">Cancelar</button>
@@ -401,7 +402,7 @@ const GEMINI_MODEL = 'gemini-2.5-flash';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DAYS = ['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b'];
 const BADGE_COLORS = { teal:'badge-teal', blue:'badge-blue', amber:'badge-amber', red:'badge-red' };
 const DOT_COLORS = { teal:'#1D9E75', blue:'#378ADD', amber:'#EF9F27', red:'#E24B4A' };
 const DEFAULT_INDICATORS = [ { letter: 'F', name: '' }, { letter: 'C', name: '' }, { letter: 'E', name: '' } ];
@@ -429,7 +430,7 @@ function renderMarkdown(text) {
     if ((m = line.match(/^##\s+(.*)/))) { closeList(); html.push('<h2>'+inline(m[1])+'</h2>'); continue; }
     if ((m = line.match(/^#\s+(.*)/))) { closeList(); html.push('<h1>'+inline(m[1])+'</h1>'); continue; }
     if (line === '---' || line === '***') { closeList(); html.push('<hr>'); continue; }
-    if ((m = line.match(/^[-*•]\s+(.*)/))) { if (inList!=='ul'){closeList();html.push('<ul>');inList='ul';} html.push('<li>'+inline(m[1])+'</li>'); continue; }
+    if ((m = line.match(/^[-*â€¢]\s+(.*)/))) { if (inList!=='ul'){closeList();html.push('<ul>');inList='ul';} html.push('<li>'+inline(m[1])+'</li>'); continue; }
     if ((m = line.match(/^\d+[\.\)]\s+(.*)/))) { if (inList!=='ol'){closeList();html.push('<ol>');inList='ol';} html.push('<li>'+inline(m[1])+'</li>'); continue; }
     closeList(); html.push('<p>'+inline(line)+'</p>');
   }
@@ -443,18 +444,18 @@ function toggleAnalysis(id) {
 
 async function sendMagicLink() {
   const email = document.getElementById('auth-email').value.trim();
-  if (!email) { showAuthMsg('Ingresá tu mail.', 'err'); return; }
+  if (!email) { showAuthMsg('IngresÃ¡ tu mail.', 'err'); return; }
   const btn = document.getElementById('auth-btn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
-  // redirige a esta misma página, sea cual sea la URL donde esté alojada
+  // redirige a esta misma pÃ¡gina, sea cual sea la URL donde estÃ© alojada
   const redirectUrl = window.location.origin + window.location.pathname;
   const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } });
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-mail"></i> Enviarme el link';
   if (error) showAuthMsg('Error: '+error.message, 'err');
-  else showAuthMsg('Listo, revisá tu mail (' + email + ') y hacé clic en el link para entrar.', 'ok');
+  else showAuthMsg('Listo, revisÃ¡ tu mail (' + email + ') y hacÃ© clic en el link para entrar.', 'ok');
 }
 function showAuthMsg(msg, type) { document.getElementById('auth-msg').innerHTML = `<div class="auth-msg ${type}">${msg}</div>`; }
-async function signOut() { if (!confirm('¿Cerrar sesión?')) return; await sb.auth.signOut(); window.location.reload(); }
+async function signOut() { if (!confirm('Â¿Cerrar sesiÃ³n?')) return; await sb.auth.signOut(); window.location.reload(); }
 
 async function initApp() {
   const { data: { session } } = await sb.auth.getSession();
@@ -503,7 +504,7 @@ async function loadAllData() {
   renderApiKeyUI(); renderSetupBanner(); setSyncStatus(false);
 }
 
-function maskKey(k) { if (!k) return ''; if (k.length<=8) return '••••••••'; return k.slice(0,6)+'••••••••'+k.slice(-4); }
+function maskKey(k) { if (!k) return ''; if (k.length<=8) return 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'; return k.slice(0,6)+'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'+k.slice(-4); }
 function renderApiKeyUI() {
   const configured = document.getElementById('api-key-configured'); const edit = document.getElementById('api-key-edit');
   if (state.profile.gemini_api_key) { configured.classList.remove('hidden'); edit.classList.add('hidden'); document.getElementById('masked-key').textContent = maskKey(state.profile.gemini_api_key); }
@@ -528,7 +529,7 @@ async function saveReminderEmail() {
   setSyncStatus(true);
   await sb.from('profiles').update({ reminder_email: val }).eq('user_id', currentUser.id);
   state.profile.reminder_email = val;
-  document.getElementById('email-status').innerHTML = `<div class="status-ok"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> Guardado. Los recordatorios llegarán a ${val}</div>`;
+  document.getElementById('email-status').innerHTML = `<div class="status-ok"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> Guardado. Los recordatorios llegarÃ¡n a ${val}</div>`;
   setSyncStatus(false);
 }
 function renderSetupBanner() {
@@ -547,14 +548,14 @@ async function callGemini(parts) {
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'Error de la API de Gemini');
   const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
-  if (!text) throw new Error('Gemini no devolvió una respuesta. Probá de nuevo.');
+  if (!text) throw new Error('Gemini no devolviÃ³ una respuesta. ProbÃ¡ de nuevo.');
   return text;
 }
 function fileToPart(base64, mimeType) { return { inline_data: { mime_type: mimeType, data: base64 } }; }
 
 function showIndConfigModal() {
   const list = document.getElementById('ind-config-list');
-  list.innerHTML = state.profile.indicators.map((ind,i) => `<div class="ind-config-row"><div class="ind-letter">${ind.letter}</div><input type="text" id="ind-name-${i}" value="${ind.name}" placeholder="Nombre del indicador (ej: Energía, Estado intestinal...)"></div>`).join('');
+  list.innerHTML = state.profile.indicators.map((ind,i) => `<div class="ind-config-row"><div class="ind-letter">${ind.letter}</div><input type="text" id="ind-name-${i}" value="${ind.name}" placeholder="Nombre del indicador (ej: EnergÃ­a, Estado intestinal...)"></div>`).join('');
   document.getElementById('ind-modal-wrap').classList.remove('hidden');
 }
 function hideIndConfigModal() { document.getElementById('ind-modal-wrap').classList.add('hidden'); }
@@ -616,15 +617,15 @@ function renderDayDetail(key, d) {
   if (!state.meds.length) { medsHtml = '<p style="font-size:13px;color:var(--text-secondary)">No hay medicamentos cargados.</p>'; }
   else {
     medsHtml = state.meds.map(m => {
-      const times = m.times ? m.times.split(',').map(t=>t.trim()) : [m.freq+'x/día'];
+      const times = m.times ? m.times.split(',').map(t=>t.trim()) : [m.freq+'x/dÃ­a'];
       return times.map((t,ti) => {
         const l = findMedLog(m.id, ti, key); const checked = !!(l && l.taken);
         return `<label class="log-item"><input type="checkbox" ${checked?'checked':''} onchange="toggleLog('${key}','${m.id}',${ti},this.checked)"><i class="ti ${checked?'ti-circle-check':'ti-circle'}" style="color:${checked?DOT_COLORS[m.color]:'var(--text-secondary)'};font-size:16px" aria-hidden="true"></i><span style="flex:1">${m.name}</span><span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span></label>`;
       }).join('');
     }).join('');
   }
-  const indsHtml = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); return `<div class="indicator-row"><div class="indicator-label">${ind.letter}</div><div class="indicator-name">${ind.name||'—'}</div><div class="semaforo">${renderSemaforo(key, ind.letter, w?w.color:null)}</div></div>`; }).join('');
-  panel.innerHTML = `<div class="day-detail"><div class="day-detail-header"><h4>${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h4></div><div class="detail-section"><div class="detail-section-title">Medicamentos</div>${medsHtml}</div><div class="detail-section"><div class="detail-section-title">Indicadores de bienestar</div>${indsHtml}<p style="font-size:11px;color:var(--text-secondary);margin-top:8px">Hacé clic en un color para marcarlo. Clic nuevamente para deseleccionar.</p></div></div>`;
+  const indsHtml = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); return `<div class="indicator-row"><div class="indicator-label">${ind.letter}</div><div class="indicator-name">${ind.name||'â€”'}</div><div class="semaforo">${renderSemaforo(key, ind.letter, w?w.color:null)}</div></div>`; }).join('');
+  panel.innerHTML = `<div class="day-detail"><div class="day-detail-header"><h4>${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h4></div><div class="detail-section"><div class="detail-section-title">Medicamentos</div>${medsHtml}</div><div class="detail-section"><div class="detail-section-title">Indicadores de bienestar</div>${indsHtml}<p style="font-size:11px;color:var(--text-secondary);margin-top:8px">HacÃ© clic en un color para marcarlo. Clic nuevamente para deseleccionar.</p></div></div>`;
 }
 function changeMonth(dir) { calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
 
@@ -678,13 +679,13 @@ function renderDashboard() {
   document.getElementById('stat-meds').textContent = state.meds.length;
   const logsToday = state.medLogs.filter(l => l.log_date===todayKey() && l.taken);
   const total = state.meds.reduce((a,m)=>a+(m.times?m.times.split(',').filter(Boolean).length:1),0);
-  document.getElementById('stat-adherencia').textContent = total ? Math.round(logsToday.length/total*100)+'%' : '—';
+  document.getElementById('stat-adherencia').textContent = total ? Math.round(logsToday.length/total*100)+'%' : 'â€”';
   const todayDiv = document.getElementById('today-meds');
   if (!state.meds.length) { todayDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-pill" aria-hidden="true"></i><p>No hay medicamentos cargados.</p></div>'; }
-  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' · ')||m.freq+'/día'}</span></div>`; }).join(''); }
+  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' Â· ')||m.freq+'/dÃ­a'}</span></div>`; }).join(''); }
   const nextDiv = document.getElementById('next-reminders');
   const upcoming = getNextReminders();
-  if (!upcoming.length) { nextDiv.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay más medicamentos programados para hoy.</p>'; }
+  if (!upcoming.length) { nextDiv.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay mÃ¡s medicamentos programados para hoy.</p>'; }
   else { nextDiv.innerHTML = upcoming.map(u => { const mt=new Date(u.alarm.getTime()+2*60*60*1000); const ms=mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0'); return `<div class="log-item"><i class="ti ti-clock" style="font-size:16px;color:${DOT_COLORS[u.med.color]||DOT_COLORS.teal}" aria-hidden="true"></i><span style="flex:1;font-size:14px">${u.med.name}</span><span class="badge ${BADGE_COLORS[u.med.color]||'badge-teal'}">${u.time}</span><span style="font-size:11px;color:var(--text-secondary);margin-left:4px">mail ${ms}</span></div>`; }).join(''); }
   const recentDiv = document.getElementById('recent-studies');
   if (!state.studies.length) { recentDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-file-medical" aria-hidden="true"></i><p>No hay estudios cargados.</p></div>'; }
@@ -713,26 +714,26 @@ function renderRemindersPage() {
         else if (isPast && mailTime>now) badge = '<span class="badge badge-amber">Esperando 2 hs</span>';
         else if (isPast && mailTime<=now) badge = '<span class="badge badge-gray">Procesando...</span>';
         else badge = '<span class="badge badge-gray">Programado</span>';
-        rows += `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[med.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${med.name}</span><span style="font-size:12px;color:var(--text-secondary);margin-right:8px">${t} → mail ${mailStr}</span>${badge}</div>`;
+        rows += `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[med.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${med.name}</span><span style="font-size:12px;color:var(--text-secondary);margin-right:8px">${t} â†’ mail ${mailStr}</span>${badge}</div>`;
       });
     });
     listEl.innerHTML = rows || '<p style="font-size:13px;color:var(--text-secondary)">Sin horarios configurados.</p>';
   }
   const histEl = document.getElementById('reminder-history');
-  if (!state.reminderHistory.length) { histEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">Ningún recordatorio enviado todavía.</p>'; }
-  else { histEl.innerHTML = state.reminderHistory.map(r => `<div class="log-item"><i class="ti ti-mail" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${r.med_name}</span><span style="font-size:12px;color:var(--text-secondary)">${r.scheduled_time||''} · ${new Date(r.sent_at).toLocaleDateString('es-AR')}</span><span class="badge badge-red">Enviado</span></div>`).join(''); }
+  if (!state.reminderHistory.length) { histEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">NingÃºn recordatorio enviado todavÃ­a.</p>'; }
+  else { histEl.innerHTML = state.reminderHistory.map(r => `<div class="log-item"><i class="ti ti-mail" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${r.med_name}</span><span style="font-size:12px;color:var(--text-secondary)">${r.scheduled_time||''} Â· ${new Date(r.sent_at).toLocaleDateString('es-AR')}</span><span class="badge badge-red">Enviado</span></div>`).join(''); }
 }
 
 function renderStudies() {
   const list = document.getElementById('estudios-list');
-  if (!state.studies.length) { list.innerHTML = '<div class="empty-state"><i class="ti ti-file-medical" aria-hidden="true"></i><p>Subí tu primer estudio arriba.</p></div>'; return; }
+  if (!state.studies.length) { list.innerHTML = '<div class="empty-state"><i class="ti ti-file-medical" aria-hidden="true"></i><p>SubÃ­ tu primer estudio arriba.</p></div>'; return; }
   list.innerHTML = state.studies.map((s) => {
     const aid = 'study'+s.id; const isOpen = !!analysisOpenState[aid];
     return `<div class="study-card">
       <div class="study-meta"><i class="ti ti-file-text" style="font-size:18px;color:#378ADD" aria-hidden="true"></i><span class="badge badge-blue">${s.type||'Estudio'}</span><span class="badge badge-teal">${s.study_date||'Sin fecha'}</span></div>
       <h4>${s.name}</h4>
-      <p>${s.analysis ? 'Análisis completo disponible.' : 'Sin análisis todavía.'}</p>
-      ${s.analysis ? `<div class="analysis-toggle ${isOpen?'open':''}" id="toggle-${aid}" onclick="toggleAnalysis('${aid}')"><div class="at-label"><i class="ti ti-sparkles" style="color:#4285F4" aria-hidden="true"></i> Ver análisis de Gemini</div><i class="ti ti-chevron-down at-chevron" aria-hidden="true"></i></div><div class="analysis-body ${isOpen?'open':''}" id="body-${aid}"><div class="analysis-body-inner"><div class="analysis-result">${renderMarkdown(s.analysis)}</div></div></div>` : ''}
+      <p>${s.analysis ? 'AnÃ¡lisis completo disponible.' : 'Sin anÃ¡lisis todavÃ­a.'}</p>
+      ${s.analysis ? `<div class="analysis-toggle ${isOpen?'open':''}" id="toggle-${aid}" onclick="toggleAnalysis('${aid}')"><div class="at-label"><i class="ti ti-sparkles" style="color:#4285F4" aria-hidden="true"></i> Ver anÃ¡lisis de Gemini</div><i class="ti ti-chevron-down at-chevron" aria-hidden="true"></i></div><div class="analysis-body ${isOpen?'open':''}" id="body-${aid}"><div class="analysis-body-inner"><div class="analysis-result">${renderMarkdown(s.analysis)}</div></div></div>` : ''}
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         ${!s.analysis?`<button class="btn btn-sm btn-primary" onclick="analyzeStudy('${s.id}')"><i class="ti ti-sparkles"></i> Analizar con IA</button>`:''}
         <button class="btn btn-sm btn-danger" onclick="deleteStudy('${s.id}')"><i class="ti ti-trash"></i> Eliminar</button>
@@ -750,7 +751,7 @@ function renderMeds() {
     const times = m.times?m.times.split(',').map(t=>t.trim()).filter(Boolean):[];
     const nextT = times.map(t=>{const [h,mn]=t.split(':').map(Number);const d=new Date();d.setHours(h,mn,0,0);return{t,d};}).filter(x=>x.d>now).sort((a,b)=>a.d-b.d)[0];
     const mailStr = nextT?(()=>{const mt=new Date(nextT.d.getTime()+2*60*60*1000);return mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0');})():null;
-    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} · ${m.freq} vez/veces al día</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail automático a las ${mailStr} si no lo marcás</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
+    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} Â· ${m.freq} vez/veces al dÃ­a</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail automÃ¡tico a las ${mailStr} si no lo marcÃ¡s</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
   }).join('');
 }
 
@@ -784,7 +785,7 @@ async function analyzeStudy(id) {
   if (loadEl) { loadEl.style.display='flex'; loadEl.classList.remove('hidden'); }
   try {
     const b64 = s.file_data.split(',')[1];
-    const parts = [ fileToPart(b64, s.mime_type), { text: `Sos un médico explicando resultados a un paciente. Analizá este estudio y explicá en lenguaje simple, usando formato Markdown (encabezados con ##, negritas con **, listas con -):\n\n## Tipo de estudio\n## Hallazgos principales\n## Valores fuera de lo normal (altos o bajos)\n## Qué podría significar\n## Preguntas para el médico\n\nSé empático y claro, sin jerga médica.` } ];
+    const parts = [ fileToPart(b64, s.mime_type), { text: `Sos un mÃ©dico explicando resultados a un paciente. AnalizÃ¡ este estudio y explicÃ¡ en lenguaje simple, usando formato Markdown (encabezados con ##, negritas con **, listas con -):\n\n## Tipo de estudio\n## Hallazgos principales\n## Valores fuera de lo normal (altos o bajos)\n## QuÃ© podrÃ­a significar\n## Preguntas para el mÃ©dico\n\nSÃ© empÃ¡tico y claro, sin jerga mÃ©dica.` } ];
     const text = await callGemini(parts);
     setSyncStatus(true);
     await sb.from('studies').update({ analysis: text }).eq('id', id);
@@ -795,27 +796,27 @@ async function analyzeStudy(id) {
 
 async function doCompare() {
   const ia = document.getElementById('compare-a').value, ib = document.getElementById('compare-b').value;
-  if (ia===''||ib===''){alert('Seleccioná dos estudios.');return;} if(ia===ib){alert('Seleccioná dos estudios distintos.');return;} if(!state.profile.gemini_api_key){showPage('configuracion');return;}
+  if (ia===''||ib===''){alert('SeleccionÃ¡ dos estudios.');return;} if(ia===ib){alert('SeleccionÃ¡ dos estudios distintos.');return;} if(!state.profile.gemini_api_key){showPage('configuracion');return;}
   const sa = state.studies.find(x=>x.id===ia), sb_ = state.studies.find(x=>x.id===ib);
   document.getElementById('compare-result').innerHTML = `<div class="card" style="text-align:center;padding:2rem"><div class="loading-dots" style="justify-content:center"><span></span><span></span><span></span></div><p style="margin-top:10px;font-size:14px;color:var(--text-secondary)">Comparando estudios con Gemini...</p></div>`;
   try {
-    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} — ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} — ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): qué cambió, si es positivo o negativo, qué mejoró, qué empeoró, si hay algo urgente, y qué preguntas para el médico. Usá lenguaje simple, sin jerga médica.` } ];
+    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} â€” ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} â€” ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): quÃ© cambiÃ³, si es positivo o negativo, quÃ© mejorÃ³, quÃ© empeorÃ³, si hay algo urgente, y quÃ© preguntas para el mÃ©dico. UsÃ¡ lenguaje simple, sin jerga mÃ©dica.` } ];
     const text = await callGemini(parts);
     document.getElementById('compare-result').innerHTML = `<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem"><span class="badge badge-blue">${sa.name}</span><i class="ti ti-arrow-right" aria-hidden="true"></i><span class="badge badge-teal">${sb_.name}</span></div><div class="analysis-result">${renderMarkdown(text)}</div></div>`;
   } catch(err) { document.getElementById('compare-result').innerHTML = `<div class="card"><p style="color:#E24B4A">Error: ${err.message}</p></div>`; }
 }
 
-async function deleteStudy(id) { if(!confirm('¿Eliminar este estudio?')) return; setSyncStatus(true); await sb.from('studies').delete().eq('id', id); state.studies = state.studies.filter(s=>s.id!==id); setSyncStatus(false); renderStudies(); }
+async function deleteStudy(id) { if(!confirm('Â¿Eliminar este estudio?')) return; setSyncStatus(true); await sb.from('studies').delete().eq('id', id); state.studies = state.studies.filter(s=>s.id!==id); setSyncStatus(false); renderStudies(); }
 function showAddMedModal() { document.getElementById('med-modal-wrap').classList.remove('hidden'); }
 function hideMedModal() { document.getElementById('med-modal-wrap').classList.add('hidden'); ['med-name','med-dose','med-times','med-notes'].forEach(id=>document.getElementById(id).value=''); }
 async function saveMed() {
-  const name = document.getElementById('med-name').value.trim(); if(!name){alert('Ingresá el nombre.');return;}
+  const name = document.getElementById('med-name').value.trim(); if(!name){alert('IngresÃ¡ el nombre.');return;}
   setSyncStatus(true);
   const { data } = await sb.from('medications').insert({ user_id: currentUser.id, name, dose: document.getElementById('med-dose').value.trim(), freq: document.getElementById('med-freq').value, times: document.getElementById('med-times').value.trim(), color: document.getElementById('med-color').value, notes: document.getElementById('med-notes').value.trim() }).select().single();
   if (data) state.meds.push(data);
   setSyncStatus(false); hideMedModal(); renderMeds();
 }
-async function deleteMed(id) { if(!confirm('¿Eliminar este medicamento?')) return; setSyncStatus(true); await sb.from('medications').delete().eq('id', id); state.meds = state.meds.filter(m=>m.id!==id); setSyncStatus(false); renderMeds(); }
+async function deleteMed(id) { if(!confirm('Â¿Eliminar este medicamento?')) return; setSyncStatus(true); await sb.from('medications').delete().eq('id', id); state.meds = state.meds.filter(m=>m.id!==id); setSyncStatus(false); renderMeds(); }
 
 const dz = document.getElementById('drop-zone');
 if (dz) {
