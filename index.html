@@ -267,7 +267,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Estudios cargados</div><div class="stat-value" id="stat-estudios">0</div></div>
         <div class="stat-card"><div class="stat-label">Medicamentos activos</div><div class="stat-value" id="stat-meds">0</div></div>
-        <div class="stat-card"><div class="stat-label">Adherencia esta semana</div><div class="stat-value" id="stat-adherencia">â€”</div></div>
+        <div class="stat-card"><div class="stat-label">Adherencia esta semana</div><div class="stat-value" id="stat-adherencia">&mdash;</div></div>
       </div>
       <div class="card"><div class="section-title">Medicamentos de hoy</div><div id="today-meds"></div></div>
       <div class="card"><div class="section-title">Pr&oacute;ximos recordatorios</div><div id="next-reminders"></div></div>
@@ -283,7 +283,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()">
         <i class="ti ti-file-upload" aria-hidden="true"></i>
         <p>Arrastr&aacute; o hac&eacute; clic para subir un estudio</p>
-        <small>PDF o im&aacute;genes â€” an&aacute;lisis cl&iacute;nicos, radiograf&iacute;as, consultas</small>
+        <small>PDF o im&aacute;genes &mdash; an&aacute;lisis cl&iacute;nicos, radiograf&iacute;as, consultas</small>
       </div>
       <div id="estudios-list" style="margin-top:1.25rem"></div>
     </div>
@@ -335,7 +335,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
     </div>
 
     <div class="page" id="page-recordatorios">
-      <div class="page-header"><h2>Recordatorios</h2><p>Avisos autom&aacute;ticos cuando no marc&aacute;s una medicaci&oacute;n â€” funcionan aunque no tengas la app abierta.</p></div>
+      <div class="page-header"><h2>Recordatorios</h2><p>Avisos autom&aacute;ticos cuando no marc&aacute;s una medicaci&oacute;n &mdash; funcionan aunque no tengas la app abierta.</p></div>
       <div class="card"><div class="section-title">Estado de recordatorios de hoy</div><div id="reminders-today-list"></div></div>
       <div class="card"><div class="section-title">Historial de recordatorios enviados</div><div id="reminder-history"></div></div>
     </div>
@@ -361,7 +361,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       </div>
       <div class="card">
         <div class="section-title">Recordatorios por correo</div>
-        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicaci&oacute;n, se env&iacute;a un mail autom&aacute;tico a esta casilla â€” funciona en segundo plano, sin necesidad de tener la app abierta.</p>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicaci&oacute;n, se env&iacute;a un mail autom&aacute;tico a esta casilla &mdash; funciona en segundo plano, sin necesidad de tener la app abierta.</p>
         <div class="email-row">
           <input type="email" id="reminder-email" placeholder="tu@email.com">
           <button class="btn btn-primary" onclick="saveReminderEmail()"><i class="ti ti-device-floppy"></i> Guardar</button>
@@ -672,7 +672,7 @@ function renderDayDetail(key, d) {
       }).join('');
     }).join('');
   }
-  const indsHtml = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); return `<div class="indicator-row"><div class="indicator-label">${ind.letter}</div><div class="indicator-name">${ind.name||'â€”'}</div><div class="semaforo">${renderSemaforo(key, ind.letter, w?w.color:null)}</div></div>`; }).join('');
+  const indsHtml = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); return `<div class="indicator-row"><div class="indicator-label">${ind.letter}</div><div class="indicator-name">${ind.name||'&mdash;'}</div><div class="semaforo">${renderSemaforo(key, ind.letter, w?w.color:null)}</div></div>`; }).join('');
   panel.innerHTML = `<div class="day-detail"><div class="day-detail-header"><h4>${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h4></div><div class="detail-section"><div class="detail-section-title">Medicamentos</div>${medsHtml}</div><div class="detail-section"><div class="detail-section-title">Indicadores de bienestar</div>${indsHtml}<p style="font-size:11px;color:var(--text-secondary);margin-top:8px">Hac&eacute; clic en un color para marcarlo. Clic nuevamente para deseleccionar.</p></div></div>`;
 }
 function changeMonth(dir) { calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
@@ -727,10 +727,10 @@ function renderDashboard() {
   document.getElementById('stat-meds').textContent = state.meds.length;
   const logsToday = state.medLogs.filter(l => l.log_date===todayKey() && l.taken);
   const total = state.meds.reduce((a,m)=>a+(m.times?m.times.split(',').filter(Boolean).length:1),0);
-  document.getElementById('stat-adherencia').textContent = total ? Math.round(logsToday.length/total*100)+'%' : 'â€”';
+  document.getElementById('stat-adherencia').textContent = total ? Math.round(logsToday.length/total*100)+'%' : '&mdash;';
   const todayDiv = document.getElementById('today-meds');
   if (!state.meds.length) { todayDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-pill" aria-hidden="true"></i><p>No hay medicamentos cargados.</p></div>'; }
-  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' Â· ')||m.freq+'/d&iacute;a'}</span></div>`; }).join(''); }
+  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' &middot; ')||m.freq+'/d&iacute;a'}</span></div>`; }).join(''); }
   const nextDiv = document.getElementById('next-reminders');
   const upcoming = getNextReminders();
   if (!upcoming.length) { nextDiv.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay m&aacute;s medicamentos programados para hoy.</p>'; }
@@ -769,7 +769,7 @@ function renderRemindersPage() {
   }
   const histEl = document.getElementById('reminder-history');
   if (!state.reminderHistory.length) { histEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">Ning&uacute;n recordatorio enviado todav&iacute;a.</p>'; }
-  else { histEl.innerHTML = state.reminderHistory.map(r => `<div class="log-item"><i class="ti ti-mail" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${r.med_name}</span><span style="font-size:12px;color:var(--text-secondary)">${r.scheduled_time||''} Â· ${new Date(r.sent_at).toLocaleDateString('es-AR')}</span><span class="badge badge-red">Enviado</span></div>`).join(''); }
+  else { histEl.innerHTML = state.reminderHistory.map(r => `<div class="log-item"><i class="ti ti-mail" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${r.med_name}</span><span style="font-size:12px;color:var(--text-secondary)">${r.scheduled_time||''} &middot; ${new Date(r.sent_at).toLocaleDateString('es-AR')}</span><span class="badge badge-red">Enviado</span></div>`).join(''); }
 }
 
 function renderStudies() {
@@ -799,7 +799,7 @@ function renderMeds() {
     const times = m.times?m.times.split(',').map(t=>t.trim()).filter(Boolean):[];
     const nextT = times.map(t=>{const [h,mn]=t.split(':').map(Number);const d=new Date();d.setHours(h,mn,0,0);return{t,d};}).filter(x=>x.d>now).sort((a,b)=>a.d-b.d)[0];
     const mailStr = nextT?(()=>{const mt=new Date(nextT.d.getTime()+2*60*60*1000);return mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0');})():null;
-    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} Â· ${m.freq} vez/veces al d&iacute;a</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail autom&aacute;tico a las ${mailStr} si no lo marc&aacute;s</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
+    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} &middot; ${m.freq} vez/veces al d&iacute;a</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail autom&aacute;tico a las ${mailStr} si no lo marc&aacute;s</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
   }).join('');
 }
 
@@ -848,7 +848,7 @@ async function doCompare() {
   const sa = state.studies.find(x=>x.id===ia), sb_ = state.studies.find(x=>x.id===ib);
   document.getElementById('compare-result').innerHTML = `<div class="card" style="text-align:center;padding:2rem"><div class="loading-dots" style="justify-content:center"><span></span><span></span><span></span></div><p style="margin-top:10px;font-size:14px;color:var(--text-secondary)">Comparando estudios con Gemini...</p></div>`;
   try {
-    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} â€” ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} â€” ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): qu&eacute; cambi&oacute;, si es positivo o negativo, qu&eacute; mejor&oacute;, qu&eacute; empeor&oacute;, si hay algo urgente, y qu&eacute; preguntas para el m&eacute;dico. Us&aacute; lenguaje simple, sin jerga m&eacute;dica.` } ];
+    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} &mdash; ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} &mdash; ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): qu&eacute; cambi&oacute;, si es positivo o negativo, qu&eacute; mejor&oacute;, qu&eacute; empeor&oacute;, si hay algo urgente, y qu&eacute; preguntas para el m&eacute;dico. Us&aacute; lenguaje simple, sin jerga m&eacute;dica.` } ];
     const text = await callGemini(parts);
     document.getElementById('compare-result').innerHTML = `<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem"><span class="badge badge-blue">${sa.name}</span><i class="ti ti-arrow-right" aria-hidden="true"></i><span class="badge badge-teal">${sb_.name}</span></div><div class="analysis-result">${renderMarkdown(text)}</div></div>`;
   } catch(err) { document.getElementById('compare-result').innerHTML = `<div class="card"><p style="color:#E24B4A">Error: ${err.message}</p></div>`; }
