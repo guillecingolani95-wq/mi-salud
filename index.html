@@ -205,11 +205,28 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 <div id="auth-screen" class="auth-screen hidden">
   <div class="auth-box">
     <h1 style="display:flex;align-items:center;justify-content:center;gap:10px;font-size:20px;font-weight:500;margin-bottom:6px;"><svg width="36" height="36" viewBox="0 0 64 64" style="flex-shrink:0;border-radius:9px;"><rect width="64" height="64" rx="14" fill="#0F6E56"/><path d="M32 50C32 50 14 38 14 26C14 18 20 12 27 12C30 12 32 14 32 17C32 14 34 12 37 12C44 12 50 18 50 26C50 38 32 50 32 50Z" fill="white"/><polyline points="16,30 22,30 25,23 28,37 31,27 33,31 38,31" fill="none" stroke="#0F6E56" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Mi Salud</h1>
-    <p>IngresÃ¡ tu mail y te mandamos un link para entrar, sin contraseÃ±a.</p>
-    <input type="email" id="auth-email" placeholder="tu@email.com">
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="sendMagicLink()" id="auth-btn">
-      <i class="ti ti-mail"></i> Enviarme el link
-    </button>
+
+    <!-- Paso 1: ingresar email -->
+    <div id="auth-step-email">
+      <p>Ingres&aacute; tu mail y te mandamos un c&oacute;digo para entrar.</p>
+      <input type="email" id="auth-email" placeholder="tu@email.com">
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="sendOtp()" id="auth-btn">
+        <i class="ti ti-mail"></i> Enviarme el c&oacute;digo
+      </button>
+    </div>
+
+    <!-- Paso 2: ingresar cÃ³digo -->
+    <div id="auth-step-code" class="hidden">
+      <p id="auth-code-hint">Revis&aacute; tu mail e ingres&aacute; el c&oacute;digo de 6 d&iacute;gitos.</p>
+      <input type="text" id="auth-code" placeholder="123456" maxlength="6" style="letter-spacing:0.3em;font-size:22px;text-align:center;" inputmode="numeric">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="verifyOtp()" id="auth-verify-btn">
+        <i class="ti ti-login"></i> Entrar
+      </button>
+      <button class="btn" style="width:100%;justify-content:center;margin-top:6px;font-size:12px;" onclick="backToEmail()">
+        &larr; Usar otro mail
+      </button>
+    </div>
+
     <div id="auth-msg"></div>
   </div>
 </div>
@@ -232,8 +249,8 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
     </nav>
     <div class="sync-status"><span class="sync-dot" id="sync-dot"></span> <span id="sync-label">Sincronizado</span></div>
     <div class="nav-bottom" style="display:flex;flex-direction:column;">
-      <div class="nav-item" onclick="showPage('configuracion')" data-page="configuracion"><i class="ti ti-settings"></i> ConfiguraciÃ³n</div>
-      <div class="nav-item" onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesiÃ³n</div>
+      <div class="nav-item" onclick="showPage('configuracion')" data-page="configuracion"><i class="ti ti-settings"></i> Configuraci&oacute;n</div>
+      <div class="nav-item" onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesi&oacute;n</div>
     </div>
   </aside>
 
@@ -253,30 +270,30 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
         <div class="stat-card"><div class="stat-label">Adherencia esta semana</div><div class="stat-value" id="stat-adherencia">â€”</div></div>
       </div>
       <div class="card"><div class="section-title">Medicamentos de hoy</div><div id="today-meds"></div></div>
-      <div class="card"><div class="section-title">PrÃ³ximos recordatorios</div><div id="next-reminders"></div></div>
+      <div class="card"><div class="section-title">Pr&oacute;ximos recordatorios</div><div id="next-reminders"></div></div>
       <div class="card"><div class="section-title">Estudios recientes</div><div id="recent-studies"></div></div>
     </div>
 
     <div class="page" id="page-estudios">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
-        <div><h2>Estudios mÃ©dicos</h2><p>SubÃ­ tus anÃ¡lisis y documentos. Analizados con Gemini, gratis.</p></div>
+        <div><h2>Estudios m&eacute;dicos</h2><p>Sub&iacute; tus an&aacute;lisis y documentos. Analizados con Gemini, gratis.</p></div>
         <button class="btn btn-primary" onclick="document.getElementById('file-upload').click()"><i class="ti ti-upload"></i> Subir estudio</button>
       </div>
       <input type="file" id="file-upload" class="hidden" accept=".pdf,image/*" onchange="handleFileUpload(event)">
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()">
         <i class="ti ti-file-upload" aria-hidden="true"></i>
-        <p>ArrastrÃ¡ o hacÃ© clic para subir un estudio</p>
-        <small>PDF o imÃ¡genes â€” anÃ¡lisis clÃ­nicos, radiografÃ­as, consultas</small>
+        <p>Arrastr&aacute; o hac&eacute; clic para subir un estudio</p>
+        <small>PDF o im&aacute;genes â€” an&aacute;lisis cl&iacute;nicos, radiograf&iacute;as, consultas</small>
       </div>
       <div id="estudios-list" style="margin-top:1.25rem"></div>
     </div>
 
     <div class="page" id="page-comparar">
-      <div class="page-header"><h2>Comparar estudios</h2><p>SeleccionÃ¡ dos estudios para ver cÃ³mo cambiaron tus valores.</p></div>
+      <div class="page-header"><h2>Comparar estudios</h2><p>Seleccion&aacute; dos estudios para ver c&oacute;mo cambiaron tus valores.</p></div>
       <div class="card">
         <div class="form-row">
           <div class="form-group"><label>Estudio anterior</label><select id="compare-a"></select></div>
-          <div class="form-group"><label>Estudio mÃ¡s reciente</label><select id="compare-b"></select></div>
+          <div class="form-group"><label>Estudio m&aacute;s reciente</label><select id="compare-b"></select></div>
         </div>
         <button class="btn btn-primary" onclick="doCompare()"><i class="ti ti-git-compare"></i> Comparar con IA</button>
       </div>
@@ -293,7 +310,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
 
     <div class="page" id="page-calendario">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
-        <div><h2>Calendario</h2><p>MedicaciÃ³n e indicadores de bienestar diarios.</p></div>
+        <div><h2>Calendario</h2><p>Medicaci&oacute;n e indicadores de bienestar diarios.</p></div>
         <button class="btn btn-sm" onclick="showIndConfigModal()"><i class="ti ti-adjustments"></i> Configurar indicadores</button>
       </div>
       <div class="card" style="padding:10px 1.25rem;">
@@ -318,15 +335,15 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
     </div>
 
     <div class="page" id="page-recordatorios">
-      <div class="page-header"><h2>Recordatorios</h2><p>Avisos automÃ¡ticos cuando no marcÃ¡s una medicaciÃ³n â€” funcionan aunque no tengas la app abierta.</p></div>
+      <div class="page-header"><h2>Recordatorios</h2><p>Avisos autom&aacute;ticos cuando no marc&aacute;s una medicaci&oacute;n â€” funcionan aunque no tengas la app abierta.</p></div>
       <div class="card"><div class="section-title">Estado de recordatorios de hoy</div><div id="reminders-today-list"></div></div>
       <div class="card"><div class="section-title">Historial de recordatorios enviados</div><div id="reminder-history"></div></div>
     </div>
 
     <div class="page" id="page-configuracion">
-      <div class="page-header"><h2>ConfiguraciÃ³n</h2><p>Claves de API y preferencias de la aplicaciÃ³n.</p></div>
+      <div class="page-header"><h2>Configuraci&oacute;n</h2><p>Claves de API y preferencias de la aplicaci&oacute;n.</p></div>
       <div class="card">
-        <div class="section-title">AnÃ¡lisis con inteligencia artificial</div>
+        <div class="section-title">An&aacute;lisis con inteligencia artificial</div>
         <div class="settings-row">
           <div>
             <div class="settings-row-label" style="display:flex;align-items:center;gap:8px;">Clave de API de Google Gemini <span class="gemini-tag">Gratis</span></div>
@@ -344,7 +361,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       </div>
       <div class="card">
         <div class="section-title">Recordatorios por correo</div>
-        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicaciÃ³n, se envÃ­a un mail automÃ¡tico a esta casilla â€” funciona en segundo plano, sin necesidad de tener la app abierta.</p>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Si a las 2 hs de la hora indicada no marcaste la medicaci&oacute;n, se env&iacute;a un mail autom&aacute;tico a esta casilla â€” funciona en segundo plano, sin necesidad de tener la app abierta.</p>
         <div class="email-row">
           <input type="email" id="reminder-email" placeholder="tu@email.com">
           <button class="btn btn-primary" onclick="saveReminderEmail()"><i class="ti ti-device-floppy"></i> Guardar</button>
@@ -369,7 +386,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
         <div class="form-group"><label>Dosis</label><input type="text" id="med-dose" placeholder="Ej: 10mg"></div>
         <div class="form-group"><label>Frecuencia</label>
           <select id="med-freq">
-            <option value="1">1 vez al dÃ­a</option><option value="2">2 veces al dÃ­a</option><option value="3">3 veces al dÃ­a</option><option value="segun-necesidad">SegÃºn necesidad</option>
+            <option value="1">1 vez al d&iacute;a</option><option value="2">2 veces al d&iacute;a</option><option value="3">3 veces al d&iacute;a</option><option value="segun-necesidad">Seg&uacute;n necesidad</option>
           </select>
         </div>
       </div>
@@ -377,7 +394,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
       <div class="form-group"><label>Color identificador</label>
         <select id="med-color"><option value="teal">Verde</option><option value="blue">Azul</option><option value="amber">Amarillo</option><option value="red">Rojo</option></select>
       </div>
-      <div class="form-group"><label>Notas (opcional)</label><textarea id="med-notes" placeholder="Indicaciones del mÃ©dico..."></textarea></div>
+      <div class="form-group"><label>Notas (opcional)</label><textarea id="med-notes" placeholder="Indicaciones del m&eacute;dico..."></textarea></div>
       <div class="modal-footer">
         <button class="btn" onclick="hideMedModal()">Cancelar</button>
         <button class="btn btn-primary" onclick="saveMed()">Guardar</button>
@@ -390,7 +407,7 @@ label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; displ
   <div class="modal-bg">
     <div class="modal">
       <h3>Configurar indicadores</h3>
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem">PonÃ© un nombre a cada letra. AparecerÃ¡n en cada dÃ­a del calendario.</p>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem">Pon&eacute; un nombre a cada letra. Aparecer&aacute;n en cada d&iacute;a del calendario.</p>
       <div id="ind-config-list"></div>
       <div class="modal-footer">
         <button class="btn" onclick="hideIndConfigModal()">Cancelar</button>
@@ -408,7 +425,7 @@ const GEMINI_MODEL = 'gemini-2.5-flash';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DAYS = ['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b'];
+const DAYS = ['Dom','Lun','Mar','Mi&eacute;','Jue','Vie','S&aacute;b'];
 const BADGE_COLORS = { teal:'badge-teal', blue:'badge-blue', amber:'badge-amber', red:'badge-red' };
 const DOT_COLORS = { teal:'#1D9E75', blue:'#378ADD', amber:'#EF9F27', red:'#E24B4A' };
 const DEFAULT_INDICATORS = [ { letter: 'F', name: '' }, { letter: 'C', name: '' }, { letter: 'E', name: '' } ];
@@ -448,20 +465,45 @@ function toggleAnalysis(id) {
   if (analysisOpenState[id]) { toggle.classList.add('open'); body.classList.add('open'); } else { toggle.classList.remove('open'); body.classList.remove('open'); }
 }
 
-async function sendMagicLink() {
+let otpEmail = '';
+
+async function sendOtp() {
   const email = document.getElementById('auth-email').value.trim();
-  if (!email) { showAuthMsg('IngresÃ¡ tu mail.', 'err'); return; }
+  if (!email) { showAuthMsg('Ingres&aacute; tu mail.', 'err'); return; }
   const btn = document.getElementById('auth-btn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
-  // redirige a esta misma pÃ¡gina, sea cual sea la URL donde estÃ© alojada
-  const redirectUrl = window.location.origin + window.location.pathname;
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } });
-  btn.disabled = false; btn.innerHTML = '<i class="ti ti-mail"></i> Enviarme el link';
-  if (error) showAuthMsg('Error: '+error.message, 'err');
-  else showAuthMsg('Listo, revisÃ¡ tu mail (' + email + ') y hacÃ© clic en el link para entrar.', 'ok');
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-mail"></i> Enviarme el c&oacute;digo';
+  if (error) { showAuthMsg('Error: '+error.message, 'err'); return; }
+  otpEmail = email;
+  document.getElementById('auth-step-email').classList.add('hidden');
+  document.getElementById('auth-step-code').classList.remove('hidden');
+  document.getElementById('auth-code-hint').innerHTML = 'Revis&aacute; tu mail (<strong>'+email+'</strong>) e ingres&aacute; el c&oacute;digo de 6 d&iacute;gitos.';
+  document.getElementById('auth-code').value = '';
+  document.getElementById('auth-code').focus();
+  showAuthMsg('', '');
 }
-function showAuthMsg(msg, type) { document.getElementById('auth-msg').innerHTML = `<div class="auth-msg ${type}">${msg}</div>`; }
-async function signOut() { if (!confirm('Â¿Cerrar sesiÃ³n?')) return; await sb.auth.signOut(); window.location.reload(); }
+
+async function verifyOtp() {
+  const code = document.getElementById('auth-code').value.trim();
+  if (!code || code.length < 6) { showAuthMsg('Ingres&aacute; el c&oacute;digo completo.', 'err'); return; }
+  const btn = document.getElementById('auth-verify-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  const { error } = await sb.auth.verifyOtp({ email: otpEmail, token: code, type: 'email' });
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i> Entrar';
+  if (error) { showAuthMsg('C&oacute;digo incorrecto o expirado. Intent&aacute; de nuevo.', 'err'); return; }
+  showAuthMsg('', '');
+  window.location.reload();
+}
+
+function backToEmail() {
+  document.getElementById('auth-step-code').classList.add('hidden');
+  document.getElementById('auth-step-email').classList.remove('hidden');
+  showAuthMsg('', '');
+}
+
+function showAuthMsg(msg, type) { document.getElementById('auth-msg').innerHTML = msg ? `<div class="auth-msg ${type}">${msg}</div>` : ''; }
+async function signOut() { if (!confirm('&iquest;Cerrar sesi&oacute;n?')) return; await sb.auth.signOut(); window.location.reload(); }
 
 async function initApp() {
   const { data: { session } } = await sb.auth.getSession();
@@ -535,7 +577,7 @@ async function saveReminderEmail() {
   setSyncStatus(true);
   await sb.from('profiles').update({ reminder_email: val }).eq('user_id', currentUser.id);
   state.profile.reminder_email = val;
-  document.getElementById('email-status').innerHTML = `<div class="status-ok"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> Guardado. Los recordatorios llegarÃ¡n a ${val}</div>`;
+  document.getElementById('email-status').innerHTML = `<div class="status-ok"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> Guardado. Los recordatorios llegar&aacute;n a ${val}</div>`;
   setSyncStatus(false);
 }
 function renderSetupBanner() {
@@ -554,14 +596,14 @@ async function callGemini(parts) {
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'Error de la API de Gemini');
   const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
-  if (!text) throw new Error('Gemini no devolviÃ³ una respuesta. ProbÃ¡ de nuevo.');
+  if (!text) throw new Error('Gemini no devolvi&oacute; una respuesta. Prob&aacute; de nuevo.');
   return text;
 }
 function fileToPart(base64, mimeType) { return { inline_data: { mime_type: mimeType, data: base64 } }; }
 
 function showIndConfigModal() {
   const list = document.getElementById('ind-config-list');
-  list.innerHTML = state.profile.indicators.map((ind,i) => `<div class="ind-config-row"><div class="ind-letter">${ind.letter}</div><input type="text" id="ind-name-${i}" value="${ind.name}" placeholder="Nombre del indicador (ej: EnergÃ­a, Estado intestinal...)"></div>`).join('');
+  list.innerHTML = state.profile.indicators.map((ind,i) => `<div class="ind-config-row"><div class="ind-letter">${ind.letter}</div><input type="text" id="ind-name-${i}" value="${ind.name}" placeholder="Nombre del indicador (ej: Energ&iacute;a, Estado intestinal...)"></div>`).join('');
   document.getElementById('ind-modal-wrap').classList.remove('hidden');
 }
 function hideIndConfigModal() { document.getElementById('ind-modal-wrap').classList.add('hidden'); }
@@ -623,7 +665,7 @@ function renderDayDetail(key, d) {
   if (!state.meds.length) { medsHtml = '<p style="font-size:13px;color:var(--text-secondary)">No hay medicamentos cargados.</p>'; }
   else {
     medsHtml = state.meds.map(m => {
-      const times = m.times ? m.times.split(',').map(t=>t.trim()) : [m.freq+'x/dÃ­a'];
+      const times = m.times ? m.times.split(',').map(t=>t.trim()) : [m.freq+'x/d&iacute;a'];
       return times.map((t,ti) => {
         const l = findMedLog(m.id, ti, key); const checked = !!(l && l.taken);
         return `<label class="log-item"><input type="checkbox" ${checked?'checked':''} onchange="toggleLog('${key}','${m.id}',${ti},this.checked)"><i class="ti ${checked?'ti-circle-check':'ti-circle'}" style="color:${checked?DOT_COLORS[m.color]:'var(--text-secondary)'};font-size:16px" aria-hidden="true"></i><span style="flex:1">${m.name}</span><span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span></label>`;
@@ -631,7 +673,7 @@ function renderDayDetail(key, d) {
     }).join('');
   }
   const indsHtml = state.profile.indicators.map(ind => { const w = state.wellnessLogs.find(x=>x.log_date===key&&x.letter===ind.letter); return `<div class="indicator-row"><div class="indicator-label">${ind.letter}</div><div class="indicator-name">${ind.name||'â€”'}</div><div class="semaforo">${renderSemaforo(key, ind.letter, w?w.color:null)}</div></div>`; }).join('');
-  panel.innerHTML = `<div class="day-detail"><div class="day-detail-header"><h4>${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h4></div><div class="detail-section"><div class="detail-section-title">Medicamentos</div>${medsHtml}</div><div class="detail-section"><div class="detail-section-title">Indicadores de bienestar</div>${indsHtml}<p style="font-size:11px;color:var(--text-secondary);margin-top:8px">HacÃ© clic en un color para marcarlo. Clic nuevamente para deseleccionar.</p></div></div>`;
+  panel.innerHTML = `<div class="day-detail"><div class="day-detail-header"><h4>${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h4></div><div class="detail-section"><div class="detail-section-title">Medicamentos</div>${medsHtml}</div><div class="detail-section"><div class="detail-section-title">Indicadores de bienestar</div>${indsHtml}<p style="font-size:11px;color:var(--text-secondary);margin-top:8px">Hac&eacute; clic en un color para marcarlo. Clic nuevamente para deseleccionar.</p></div></div>`;
 }
 function changeMonth(dir) { calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
 
@@ -688,10 +730,10 @@ function renderDashboard() {
   document.getElementById('stat-adherencia').textContent = total ? Math.round(logsToday.length/total*100)+'%' : 'â€”';
   const todayDiv = document.getElementById('today-meds');
   if (!state.meds.length) { todayDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-pill" aria-hidden="true"></i><p>No hay medicamentos cargados.</p></div>'; }
-  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' Â· ')||m.freq+'/dÃ­a'}</span></div>`; }).join(''); }
+  else { todayDiv.innerHTML = state.meds.map(m => { const times = m.times?m.times.split(',').map(t=>t.trim()):[]; return `<div class="log-item"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal};font-size:16px" aria-hidden="true"></i><span style="flex:1;font-size:14px">${m.name} <small style="color:var(--text-secondary)">${m.dose||''}</small></span><span style="font-size:12px;color:var(--text-secondary)">${times.join(' Â· ')||m.freq+'/d&iacute;a'}</span></div>`; }).join(''); }
   const nextDiv = document.getElementById('next-reminders');
   const upcoming = getNextReminders();
-  if (!upcoming.length) { nextDiv.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay mÃ¡s medicamentos programados para hoy.</p>'; }
+  if (!upcoming.length) { nextDiv.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No hay m&aacute;s medicamentos programados para hoy.</p>'; }
   else { nextDiv.innerHTML = upcoming.map(u => { const mt=new Date(u.alarm.getTime()+2*60*60*1000); const ms=mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0'); return `<div class="log-item"><i class="ti ti-clock" style="font-size:16px;color:${DOT_COLORS[u.med.color]||DOT_COLORS.teal}" aria-hidden="true"></i><span style="flex:1;font-size:14px">${u.med.name}</span><span class="badge ${BADGE_COLORS[u.med.color]||'badge-teal'}">${u.time}</span><span style="font-size:11px;color:var(--text-secondary);margin-left:4px">mail ${ms}</span></div>`; }).join(''); }
   const recentDiv = document.getElementById('recent-studies');
   if (!state.studies.length) { recentDiv.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ti ti-file-medical" aria-hidden="true"></i><p>No hay estudios cargados.</p></div>'; }
@@ -726,20 +768,20 @@ function renderRemindersPage() {
     listEl.innerHTML = rows || '<p style="font-size:13px;color:var(--text-secondary)">Sin horarios configurados.</p>';
   }
   const histEl = document.getElementById('reminder-history');
-  if (!state.reminderHistory.length) { histEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">NingÃºn recordatorio enviado todavÃ­a.</p>'; }
+  if (!state.reminderHistory.length) { histEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">Ning&uacute;n recordatorio enviado todav&iacute;a.</p>'; }
   else { histEl.innerHTML = state.reminderHistory.map(r => `<div class="log-item"><i class="ti ti-mail" style="font-size:16px;color:#378ADD" aria-hidden="true"></i><span style="flex:1;font-size:14px">${r.med_name}</span><span style="font-size:12px;color:var(--text-secondary)">${r.scheduled_time||''} Â· ${new Date(r.sent_at).toLocaleDateString('es-AR')}</span><span class="badge badge-red">Enviado</span></div>`).join(''); }
 }
 
 function renderStudies() {
   const list = document.getElementById('estudios-list');
-  if (!state.studies.length) { list.innerHTML = '<div class="empty-state"><i class="ti ti-file-medical" aria-hidden="true"></i><p>SubÃ­ tu primer estudio arriba.</p></div>'; return; }
+  if (!state.studies.length) { list.innerHTML = '<div class="empty-state"><i class="ti ti-file-medical" aria-hidden="true"></i><p>Sub&iacute; tu primer estudio arriba.</p></div>'; return; }
   list.innerHTML = state.studies.map((s) => {
     const aid = 'study'+s.id; const isOpen = !!analysisOpenState[aid];
     return `<div class="study-card">
       <div class="study-meta"><i class="ti ti-file-text" style="font-size:18px;color:#378ADD" aria-hidden="true"></i><span class="badge badge-blue">${s.type||'Estudio'}</span><span class="badge badge-teal">${s.study_date||'Sin fecha'}</span></div>
       <h4>${s.name}</h4>
-      <p>${s.analysis ? 'AnÃ¡lisis completo disponible.' : 'Sin anÃ¡lisis todavÃ­a.'}</p>
-      ${s.analysis ? `<div class="analysis-toggle ${isOpen?'open':''}" id="toggle-${aid}" onclick="toggleAnalysis('${aid}')"><div class="at-label"><i class="ti ti-sparkles" style="color:#4285F4" aria-hidden="true"></i> Ver anÃ¡lisis de Gemini</div><i class="ti ti-chevron-down at-chevron" aria-hidden="true"></i></div><div class="analysis-body ${isOpen?'open':''}" id="body-${aid}"><div class="analysis-body-inner"><div class="analysis-result">${renderMarkdown(s.analysis)}</div></div></div>` : ''}
+      <p>${s.analysis ? 'An&aacute;lisis completo disponible.' : 'Sin an&aacute;lisis todav&iacute;a.'}</p>
+      ${s.analysis ? `<div class="analysis-toggle ${isOpen?'open':''}" id="toggle-${aid}" onclick="toggleAnalysis('${aid}')"><div class="at-label"><i class="ti ti-sparkles" style="color:#4285F4" aria-hidden="true"></i> Ver an&aacute;lisis de Gemini</div><i class="ti ti-chevron-down at-chevron" aria-hidden="true"></i></div><div class="analysis-body ${isOpen?'open':''}" id="body-${aid}"><div class="analysis-body-inner"><div class="analysis-result">${renderMarkdown(s.analysis)}</div></div></div>` : ''}
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         ${!s.analysis?`<button class="btn btn-sm btn-primary" onclick="analyzeStudy('${s.id}')"><i class="ti ti-sparkles"></i> Analizar con IA</button>`:''}
         <button class="btn btn-sm btn-danger" onclick="deleteStudy('${s.id}')"><i class="ti ti-trash"></i> Eliminar</button>
@@ -757,7 +799,7 @@ function renderMeds() {
     const times = m.times?m.times.split(',').map(t=>t.trim()).filter(Boolean):[];
     const nextT = times.map(t=>{const [h,mn]=t.split(':').map(Number);const d=new Date();d.setHours(h,mn,0,0);return{t,d};}).filter(x=>x.d>now).sort((a,b)=>a.d-b.d)[0];
     const mailStr = nextT?(()=>{const mt=new Date(nextT.d.getTime()+2*60*60*1000);return mt.getHours().toString().padStart(2,'0')+':'+mt.getMinutes().toString().padStart(2,'0');})():null;
-    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} Â· ${m.freq} vez/veces al dÃ­a</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail automÃ¡tico a las ${mailStr} si no lo marcÃ¡s</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
+    return `<div class="med-card"><div class="med-icon" style="background:${DOT_COLORS[m.color]||DOT_COLORS.teal}22"><i class="ti ti-pill" style="color:${DOT_COLORS[m.color]||DOT_COLORS.teal}" aria-hidden="true"></i></div><div class="med-info"><h4>${m.name}</h4><p>${m.dose||''} Â· ${m.freq} vez/veces al d&iacute;a</p><div class="med-times">${times.map(t=>`<span class="badge ${BADGE_COLORS[m.color]||'badge-teal'}">${t}</span>`).join('')}</div>${nextT&&mailStr?`<div class="next-alarm"><i class="ti ti-bell" style="font-size:14px" aria-hidden="true"></i> Mail autom&aacute;tico a las ${mailStr} si no lo marc&aacute;s</div>`:''} ${m.notes?`<p style="margin-top:4px;font-style:italic;color:var(--text-secondary)">${m.notes}</p>`:''}</div><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.id}')"><i class="ti ti-trash"></i></button></div>`;
   }).join('');
 }
 
@@ -791,7 +833,7 @@ async function analyzeStudy(id) {
   if (loadEl) { loadEl.style.display='flex'; loadEl.classList.remove('hidden'); }
   try {
     const b64 = s.file_data.split(',')[1];
-    const parts = [ fileToPart(b64, s.mime_type), { text: `Sos un mÃ©dico explicando resultados a un paciente. AnalizÃ¡ este estudio y explicÃ¡ en lenguaje simple, usando formato Markdown (encabezados con ##, negritas con **, listas con -):\n\n## Tipo de estudio\n## Hallazgos principales\n## Valores fuera de lo normal (altos o bajos)\n## QuÃ© podrÃ­a significar\n## Preguntas para el mÃ©dico\n\nSÃ© empÃ¡tico y claro, sin jerga mÃ©dica.` } ];
+    const parts = [ fileToPart(b64, s.mime_type), { text: `Sos un m&eacute;dico explicando resultados a un paciente. Analiz&aacute; este estudio y explic&aacute; en lenguaje simple, usando formato Markdown (encabezados con ##, negritas con **, listas con -):\n\n## Tipo de estudio\n## Hallazgos principales\n## Valores fuera de lo normal (altos o bajos)\n## Qu&eacute; podr&iacute;a significar\n## Preguntas para el m&eacute;dico\n\nS&eacute; emp&aacute;tico y claro, sin jerga m&eacute;dica.` } ];
     const text = await callGemini(parts);
     setSyncStatus(true);
     await sb.from('studies').update({ analysis: text }).eq('id', id);
@@ -802,27 +844,27 @@ async function analyzeStudy(id) {
 
 async function doCompare() {
   const ia = document.getElementById('compare-a').value, ib = document.getElementById('compare-b').value;
-  if (ia===''||ib===''){alert('SeleccionÃ¡ dos estudios.');return;} if(ia===ib){alert('SeleccionÃ¡ dos estudios distintos.');return;} if(!state.profile.gemini_api_key){showPage('configuracion');return;}
+  if (ia===''||ib===''){alert('Seleccion&aacute; dos estudios.');return;} if(ia===ib){alert('Seleccion&aacute; dos estudios distintos.');return;} if(!state.profile.gemini_api_key){showPage('configuracion');return;}
   const sa = state.studies.find(x=>x.id===ia), sb_ = state.studies.find(x=>x.id===ib);
   document.getElementById('compare-result').innerHTML = `<div class="card" style="text-align:center;padding:2rem"><div class="loading-dots" style="justify-content:center"><span></span><span></span><span></span></div><p style="margin-top:10px;font-size:14px;color:var(--text-secondary)">Comparando estudios con Gemini...</p></div>`;
   try {
-    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} â€” ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} â€” ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): quÃ© cambiÃ³, si es positivo o negativo, quÃ© mejorÃ³, quÃ© empeorÃ³, si hay algo urgente, y quÃ© preguntas para el mÃ©dico. UsÃ¡ lenguaje simple, sin jerga mÃ©dica.` } ];
+    const parts = [ { text: `Estudio 1 (anterior): ${sa.name} â€” ${sa.study_date||'sin fecha'}` }, fileToPart(sa.file_data.split(',')[1], sa.mime_type), { text: `Estudio 2 (reciente): ${sb_.name} â€” ${sb_.study_date||'sin fecha'}` }, fileToPart(sb_.file_data.split(',')[1], sb_.mime_type), { text: `Comparalos usando formato Markdown (encabezados ##, negritas **, listas -): qu&eacute; cambi&oacute;, si es positivo o negativo, qu&eacute; mejor&oacute;, qu&eacute; empeor&oacute;, si hay algo urgente, y qu&eacute; preguntas para el m&eacute;dico. Us&aacute; lenguaje simple, sin jerga m&eacute;dica.` } ];
     const text = await callGemini(parts);
     document.getElementById('compare-result').innerHTML = `<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem"><span class="badge badge-blue">${sa.name}</span><i class="ti ti-arrow-right" aria-hidden="true"></i><span class="badge badge-teal">${sb_.name}</span></div><div class="analysis-result">${renderMarkdown(text)}</div></div>`;
   } catch(err) { document.getElementById('compare-result').innerHTML = `<div class="card"><p style="color:#E24B4A">Error: ${err.message}</p></div>`; }
 }
 
-async function deleteStudy(id) { if(!confirm('Â¿Eliminar este estudio?')) return; setSyncStatus(true); await sb.from('studies').delete().eq('id', id); state.studies = state.studies.filter(s=>s.id!==id); setSyncStatus(false); renderStudies(); }
+async function deleteStudy(id) { if(!confirm('&iquest;Eliminar este estudio?')) return; setSyncStatus(true); await sb.from('studies').delete().eq('id', id); state.studies = state.studies.filter(s=>s.id!==id); setSyncStatus(false); renderStudies(); }
 function showAddMedModal() { document.getElementById('med-modal-wrap').classList.remove('hidden'); }
 function hideMedModal() { document.getElementById('med-modal-wrap').classList.add('hidden'); ['med-name','med-dose','med-times','med-notes'].forEach(id=>document.getElementById(id).value=''); }
 async function saveMed() {
-  const name = document.getElementById('med-name').value.trim(); if(!name){alert('IngresÃ¡ el nombre.');return;}
+  const name = document.getElementById('med-name').value.trim(); if(!name){alert('Ingres&aacute; el nombre.');return;}
   setSyncStatus(true);
   const { data } = await sb.from('medications').insert({ user_id: currentUser.id, name, dose: document.getElementById('med-dose').value.trim(), freq: document.getElementById('med-freq').value, times: document.getElementById('med-times').value.trim(), color: document.getElementById('med-color').value, notes: document.getElementById('med-notes').value.trim() }).select().single();
   if (data) state.meds.push(data);
   setSyncStatus(false); hideMedModal(); renderMeds();
 }
-async function deleteMed(id) { if(!confirm('Â¿Eliminar este medicamento?')) return; setSyncStatus(true); await sb.from('medications').delete().eq('id', id); state.meds = state.meds.filter(m=>m.id!==id); setSyncStatus(false); renderMeds(); }
+async function deleteMed(id) { if(!confirm('&iquest;Eliminar este medicamento?')) return; setSyncStatus(true); await sb.from('medications').delete().eq('id', id); state.meds = state.meds.filter(m=>m.id!==id); setSyncStatus(false); renderMeds(); }
 
 const dz = document.getElementById('drop-zone');
 if (dz) {
